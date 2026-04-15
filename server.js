@@ -81,27 +81,27 @@ async function ensureTables() {
     )
   `);
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS payments (
-      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      user_id INT NULL,
-      payment_id VARCHAR(100) NOT NULL UNIQUE,
-      payment_type VARCHAR(30) NOT NULL,
-      status VARCHAR(50) NOT NULL,
-      status_detail VARCHAR(100) NULL,
-      transaction_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-      description VARCHAR(255) NULL,
-      payer_email VARCHAR(191) NOT NULL,
-      external_reference VARCHAR(100) NULL,
-      access_token VARCHAR(100) NULL,
-      raw_response JSON NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      CONSTRAINT fk_payments_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE SET NULL
-    )
-  `);
+ await pool.query(`
+  CREATE TABLE IF NOT EXISTS payments (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    payment_id VARCHAR(100) NOT NULL UNIQUE,
+    payment_type VARCHAR(30) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    status_detail VARCHAR(100) NULL,
+    transaction_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    description VARCHAR(255) NULL,
+    payer_email VARCHAR(191) NOT NULL,
+    external_reference VARCHAR(100) NULL,
+    access_token VARCHAR(100) NULL,
+    raw_response JSON NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payments_user
+      FOREIGN KEY (user_id) REFERENCES users(id)
+      ON DELETE SET NULL
+  )
+`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS payment_events (
