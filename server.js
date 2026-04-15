@@ -46,20 +46,20 @@ let pool;
 
 async function initDB() {
   pool = mysql.createPool({
-  host: process.env.MYSQLHOST,
-  port: Number(process.env.MYSQLPORT || 3306),
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+    host: process.env.MYSQLHOST,
+    port: Number(process.env.MYSQLPORT || 3306),
+    user: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    database: process.env.MYSQL_DATABASE,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+  });
 
-console.log("MYSQLHOST:", process.env.MYSQLHOST);
-console.log("MYSQLPORT:", process.env.MYSQLPORT);
-console.log("MYSQLUSER:", process.env.MYSQLUSER);
-console.log("MYSQL_DATABASE:", process.env.MYSQL_DATABASE);
+  console.log("MYSQLHOST:", process.env.MYSQLHOST);
+  console.log("MYSQLPORT:", process.env.MYSQLPORT);
+  console.log("MYSQLUSER:", process.env.MYSQLUSER);
+  console.log("MYSQL_DATABASE:", process.env.MYSQL_DATABASE);
 
   await pool.query("SELECT 1");
   console.log("MySQL conectado com sucesso.");
@@ -80,33 +80,51 @@ async function ensureTables() {
       name VARCHAR(150) NULL,
       email VARCHAR(191) NOT NULL UNIQUE,
       password_hash VARCHAR(255) NULL,
+      celular VARCHAR(30) NULL,
+      nascimento VARCHAR(30) NULL,
+      area VARCHAR(100) NULL,
       access_released TINYINT(1) NOT NULL DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
 
- await pool.query(`
-  CREATE TABLE IF NOT EXISTS payments (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NULL,
-    payment_id VARCHAR(100) NOT NULL UNIQUE,
-    payment_type VARCHAR(30) NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    status_detail VARCHAR(100) NULL,
-    transaction_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-    description VARCHAR(255) NULL,
-    payer_email VARCHAR(191) NOT NULL,
-    external_reference VARCHAR(100) NULL,
-    access_token VARCHAR(100) NULL,
-    raw_response JSON NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_payments_user
-      FOREIGN KEY (user_id) REFERENCES users(id)
-      ON DELETE SET NULL
-  )
-`);
+  const [columns] = await pool.query("SHOW COLUMNS FROM users");
+  const columnNames = columns.map(col => col.Field);
+
+  if (!columnNames.includes("celular")) {
+    await pool.query("ALTER TABLE users ADD COLUMN celular VARCHAR(30) NULL");
+  }
+
+  if (!columnNames.includes("nascimento")) {
+    await pool.query("ALTER TABLE users ADD COLUMN nascimento VARCHAR(30) NULL");
+  }
+
+  if (!columnNames.includes("area")) {
+    await pool.query("ALTER TABLE users ADD COLUMN area VARCHAR(100) NULL");
+  }
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS payments (
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NULL,
+      payment_id VARCHAR(100) NOT NULL UNIQUE,
+      payment_type VARCHAR(30) NOT NULL,
+      status VARCHAR(50) NOT NULL,
+      status_detail VARCHAR(100) NULL,
+      transaction_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+      description VARCHAR(255) NULL,
+      payer_email VARCHAR(191) NOT NULL,
+      external_reference VARCHAR(100) NULL,
+      access_token VARCHAR(100) NULL,
+      raw_response JSON NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      CONSTRAINT fk_payments_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE SET NULL
+    )
+  `);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS payment_events (
@@ -122,7 +140,7 @@ async function ensureTables() {
 
 async function findOrCreateUser({ name, email }) {
   const [rows] = await pool.query(
-    `SELECT id, email, name, access_released
+    `SELECT id, email, name, celular, nascimento, area, access_released
      FROM users
      WHERE email = ?
      LIMIT 1`,
@@ -143,6 +161,9 @@ async function findOrCreateUser({ name, email }) {
     id: result.insertId,
     name: name || null,
     email,
+    celular: null,
+    nascimento: null,
+    area: null,
     access_released: 0
   };
 }
@@ -250,19 +271,49 @@ app.get("/api/config", (_req, res) => {
 
 app.post("/api/users/register", async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email, password, celular, nascimento, area } = req.body;
 
-    if (!email) {
+    if (!name || !email || !password) {
       return res.status(400).json({
-        error: "E-mail é obrigatório"
+        error: "Nome, e-mail e senha são obrigatórios"
       });
     }
 
-    const user = await findOrCreateUser({ name, email });
+    const [existing] = await pool.query(
+      `SELECT id FROM users WHERE email = ? LIMIT 1`,
+      [email]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        error: "Já existe uma conta com esse e-mail"
+      });
+    }
+
+    const [result] = await pool.query(
+      `INSERT INTO users (name, email, password_hash, celular, nascimento, area)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        name,
+        email,
+        password,
+        celular || null,
+        nascimento || null,
+        area || null
+      ]
+    );
 
     return res.status(201).json({
       success: true,
-      user
+      user: {
+        id: result.insertId,
+        name,
+        email,
+        celular: celular || null,
+        nascimento: nascimento || null,
+        area: area || null,
+        access_released: 0
+      }
     });
   } catch (error) {
     console.error("Erro ao registrar usuário:", error);
@@ -273,12 +324,65 @@ app.post("/api/users/register", async (req, res) => {
   }
 });
 
+app.post("/api/users/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error: "E-mail e senha são obrigatórios"
+      });
+    }
+
+    const [rows] = await pool.query(
+      `SELECT id, name, email, password_hash, celular, nascimento, area, access_released
+       FROM users
+       WHERE email = ?
+       LIMIT 1`,
+      [email]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({
+        error: "Nenhuma conta cadastrada encontrada"
+      });
+    }
+
+    const user = rows[0];
+
+    if (user.password_hash !== password) {
+      return res.status(401).json({
+        error: "E-mail ou senha inválidos."
+      });
+    }
+
+    return res.json({
+      success: true,
+      user: {
+        id: user.id,
+        nome: user.name,
+        email: user.email,
+        celular: user.celular,
+        nascimento: user.nascimento,
+        area: user.area,
+        access_released: user.access_released
+      }
+    });
+  } catch (error) {
+    console.error("Erro no login:", error);
+    return res.status(500).json({
+      error: "Erro ao fazer login",
+      details: error.message
+    });
+  }
+});
+
 app.get("/api/users/access/:email", async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email);
 
     const [rows] = await pool.query(
-      `SELECT id, name, email, access_released
+      `SELECT id, name, email, celular, nascimento, area, access_released
        FROM users
        WHERE email = ?
        LIMIT 1`,
@@ -293,7 +397,15 @@ app.get("/api/users/access/:email", async (req, res) => {
 
     return res.json({
       success: true,
-      user: rows[0]
+      user: {
+        id: rows[0].id,
+        name: rows[0].name,
+        email: rows[0].email,
+        celular: rows[0].celular,
+        nascimento: rows[0].nascimento,
+        area: rows[0].area,
+        access_released: rows[0].access_released
+      }
     });
   } catch (error) {
     console.error("Erro ao consultar acesso do usuário:", error);

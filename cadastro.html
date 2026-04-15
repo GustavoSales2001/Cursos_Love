@@ -114,32 +114,59 @@
   </div>
 
   <script>
-    function cadastrar() {
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const celular = document.getElementById("celular").value;
+    const API_BASE_URL = "https://cursoslove-production.up.railway.app/api";
+
+    async function cadastrar() {
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const celular = document.getElementById("celular").value.trim();
       const nascimento = document.getElementById("nascimento").value;
       const area = document.getElementById("area").value;
-      const senha = document.getElementById("senha").value;
+      const senha = document.getElementById("senha").value.trim();
 
       if (!nome || !email || !celular || !nascimento || !senha) {
         alert("Preencha todos os campos obrigatórios!");
         return;
       }
 
-      const usuario = {
-        nome,
-        email,
-        celular,
-        nascimento,
-        area,
-        senha
-      };
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: nome,
+            email,
+            password: senha,
+            celular,
+            nascimento,
+            area
+          })
+        });
 
-      localStorage.setItem("usuario", JSON.stringify(usuario));
+        const data = await response.json();
 
-      alert("Conta criada com sucesso!");
-      window.location.href = "login.html";
+        if (!response.ok) {
+          alert(data.error || "Erro ao cadastrar.");
+          return;
+        }
+
+        localStorage.setItem("usuario", JSON.stringify({
+          id: data.user.id,
+          nome,
+          email,
+          celular,
+          nascimento,
+          area
+        }));
+
+        alert("Conta criada com sucesso!");
+        window.location.href = "login.html";
+      } catch (error) {
+        console.error("Erro no cadastro:", error);
+        alert("Erro ao conectar com o servidor.");
+      }
     }
   </script>
 

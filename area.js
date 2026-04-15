@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_BASE_URL = "https://cursoslove-production.up.railway.app/api";
 
   const tabButtons = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
@@ -32,22 +33,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-  // 🔥 NOVO: valida pagamento por email
-  const pagamentoConfirmado = usuario?.email
-    ? localStorage.getItem(`pagamentoConfirmado_${usuario.email}`)
-    : null;
-
-  if (!usuario) {
+  if (!usuario || !usuario.email) {
     alert("Você precisa fazer login primeiro.");
     window.location.href = "login.html";
-  } else if (pagamentoConfirmado !== "true") {
-    alert("Você precisa finalizar o pagamento antes de acessar o conteúdo.");
-    window.location.href = "pagamento.html";
-  } else {
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/users/access/${encodeURIComponent(usuario.email)}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.user) {
+      alert("Usuário não encontrado. Faça login novamente.");
+      localStorage.removeItem("usuario");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const usuarioBanco = data.user;
+
+    localStorage.setItem(
+      "usuario",
+      JSON.stringify({
+        ...usuario,
+        nome: usuario.nome || usuarioBanco.name || "",
+        email: usuarioBanco.email
+      })
+    );
+
+    if (usuarioBanco.access_released !== 1) {
+      alert("Você precisa finalizar o pagamento antes de acessar o conteúdo.");
+      window.location.href = "pagamento.html";
+      return;
+    }
+
+    const usuarioAtualizado = JSON.parse(localStorage.getItem("usuario"));
 
     const welcomeText = document.getElementById("welcomeText");
     if (welcomeText) {
-      welcomeText.textContent = `Olá, ${usuario.nome}. Bom te ver por aqui.`;
+      welcomeText.textContent = `Olá, ${usuarioAtualizado.nome || "aluno(a)"}. Bom te ver por aqui.`;
     }
 
     const perfilNome = document.getElementById("perfilNome");
@@ -56,20 +83,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const perfilNascimento = document.getElementById("perfilNascimento");
     const perfilArea = document.getElementById("perfilArea");
 
-    if (perfilNome) perfilNome.textContent = usuario.nome || "-";
-    if (perfilEmail) perfilEmail.textContent = usuario.email || "-";
-    if (perfilCelular) perfilCelular.textContent = usuario.celular || "-";
-    if (perfilNascimento) perfilNascimento.textContent = usuario.nascimento || "-";
-    if (perfilArea) perfilArea.textContent = usuario.area || "-";
+    if (perfilNome) perfilNome.textContent = usuarioAtualizado.nome || "-";
+    if (perfilEmail) perfilEmail.textContent = usuarioAtualizado.email || "-";
+    if (perfilCelular) perfilCelular.textContent = usuarioAtualizado.celular || "-";
+    if (perfilNascimento) perfilNascimento.textContent = usuarioAtualizado.nascimento || "-";
+    if (perfilArea) perfilArea.textContent = usuarioAtualizado.area || "-";
+  } catch (error) {
+    console.error("Erro ao validar acesso:", error);
+    alert("Erro ao validar acesso. Tente novamente.");
+    window.location.href = "login.html";
+    return;
   }
 
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("usuario"); // 🔥 NÃO remove pagamento
+      localStorage.removeItem("usuario");
       alert("Você saiu da área do aluno.");
       window.location.href = "login.html";
     });
   }
-
 });
