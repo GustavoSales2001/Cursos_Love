@@ -2,7 +2,7 @@ const radios = document.querySelectorAll('input[name="pagamento"]');
 const paymentInfo = document.getElementById("paymentInfo");
 const paymentOptions = document.querySelectorAll(".payment-option");
 
-const API_BASE_URL = "https://SEU-APP.up.railway.app/api";
+const API_BASE_URL = "https://cursoslove-production.up.railway.app/api";
 
 let pagamentoAtualId = null;
 let ultimoPixCode = null;
@@ -50,7 +50,7 @@ async function atualizarPagamento() {
     paymentInfo.innerHTML = `
       <div class="info-box">
         <h4>Pagamento com cartão</h4>
-        <p>Preencha os dados abaixo para continuar:</p>
+        <p>Essa opção está quase pronta, mas ainda precisa da etapa de tokenização com Mercado Pago.</p>
 
         <div class="card-form">
           <div>
@@ -89,7 +89,7 @@ async function atualizarPagamento() {
           </div>
         </div>
 
-        <p class="note">Ao clicar em continuar, os dados serão enviados para o backend.</p>
+        <p class="note">Por enquanto, para pagamento real, use PIX.</p>
       </div>
     `;
   }
@@ -123,7 +123,7 @@ async function criarPix() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || "Erro ao gerar PIX.");
+      throw new Error(data.error || data.details || "Erro ao gerar PIX.");
     }
 
     pagamentoAtualId = data.id;
@@ -190,7 +190,7 @@ async function consultarStatusPagamento() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || "Erro ao consultar pagamento.");
+      throw new Error(data.error || data.details || "Erro ao consultar pagamento.");
     }
 
     if (data.status === "approved") {
@@ -201,79 +201,6 @@ async function consultarStatusPagamento() {
     }
 
     alert(`Status atual do pagamento: ${data.status}`);
-  } catch (error) {
-    alert(error.message);
-  }
-}
-
-async function pagarComCartao() {
-  const nomeCartao = document.getElementById("nomeCartao")?.value.trim();
-  const numeroCartao = document.getElementById("numeroCartao")?.value.trim();
-  const validadeCartao = document.getElementById("validadeCartao")?.value.trim();
-  const cvvCartao = document.getElementById("cvvCartao")?.value.trim();
-  const cpfTitular = document.getElementById("cpfTitular")?.value.trim();
-  const parcelas = document.getElementById("parcelas")?.value;
-
-  if (!nomeCartao || !numeroCartao || !validadeCartao || !cvvCartao || !cpfTitular || !parcelas) {
-    alert("Preencha todos os dados do cartão.");
-    return;
-  }
-
-  const [mes, ano] = validadeCartao.split("/");
-
-  if (!mes || !ano) {
-    alert("Informe a validade no formato MM/AA.");
-    return;
-  }
-
-  try {
-    const usuario = getUsuario();
-
-    const response = await fetch(`${API_BASE_URL}/payments/card`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        amount: 19.99,
-        description: "Acesso ao curso CVIA",
-        installments: Number(parcelas),
-        payer: {
-          email: usuario.email || "cliente@email.com",
-          identification: {
-            type: "CPF",
-            number: cpfTitular.replace(/\D/g, "")
-          }
-        },
-
-        /* 
-          Isso é uma base visual.
-          Para Mercado Pago real, o ideal depois é trocar isso por token do cartão.
-        */
-        card_data: {
-          cardholder_name: nomeCartao,
-          card_number: numeroCartao.replace(/\s/g, ""),
-          expiration_month: mes,
-          expiration_year: `20${ano}`,
-          security_code: cvvCartao
-        }
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Erro ao processar pagamento com cartão.");
-    }
-
-    if (data.status === "approved") {
-      localStorage.setItem("pagamentoConfirmado", "true");
-      alert("Pagamento aprovado com sucesso.");
-      window.location.href = "area.html";
-      return;
-    }
-
-    alert(`Pagamento criado com status: ${data.status}`);
   } catch (error) {
     alert(error.message);
   }
@@ -299,7 +226,7 @@ async function confirmarPagamento() {
   }
 
   if (metodo === "cartao") {
-    await pagarComCartao();
+    alert("No momento, finalize pelo PIX. O cartão ainda depende da tokenização do Mercado Pago.");
   }
 }
 

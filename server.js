@@ -54,9 +54,6 @@ app.get("/api/config", (_req, res) => {
   });
 });
 
-/**
- * PIX
- */
 app.post("/api/payments/pix", async (req, res) => {
   try {
     const { amount, description, payer } = req.body;
@@ -110,10 +107,6 @@ app.post("/api/payments/pix", async (req, res) => {
   }
 });
 
-/**
- * CARTÃO
- * Espera token gerado no frontend com MercadoPago.js
- */
 app.post("/api/payments/card", async (req, res) => {
   try {
     const {
@@ -179,9 +172,6 @@ app.post("/api/payments/card", async (req, res) => {
   }
 });
 
-/**
- * CONSULTAR STATUS
- */
 app.get("/api/payments/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -203,19 +193,9 @@ app.get("/api/payments/:id", async (req, res) => {
   }
 });
 
-/**
- * WEBHOOK
- */
 app.post("/api/webhooks/mercadopago", async (req, res) => {
   try {
     console.log("Webhook recebido:", JSON.stringify(req.body, null, 2));
-
-    // Aqui depois você pode:
-    // 1. pegar o payment id do webhook
-    // 2. consultar o pagamento completo
-    // 3. atualizar seu banco
-    // 4. liberar acesso ao curso quando status === "approved"
-
     return res.sendStatus(200);
   } catch (error) {
     console.error("Erro webhook:", error);
