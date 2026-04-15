@@ -46,15 +46,20 @@ let pool;
 
 async function initDB() {
   pool = mysql.createPool({
-    host: process.env.MYSQLHOST,
-    port: Number(process.env.MYSQLPORT || 3306),
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQLDATABASE,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-  });
+  host: process.env.MYSQLHOST,
+  port: Number(process.env.MYSQLPORT || 3306),
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
+
+console.log("MYSQLHOST:", process.env.MYSQLHOST);
+console.log("MYSQLPORT:", process.env.MYSQLPORT);
+console.log("MYSQLUSER:", process.env.MYSQLUSER);
+console.log("MYSQL_DATABASE:", process.env.MYSQL_DATABASE);
 
   await pool.query("SELECT 1");
   console.log("MySQL conectado com sucesso.");
