@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento - CVIA</title>
+  <link rel="stylesheet" href="pagamento.css">
+</head>
+<body>
+  <div class="payment-page">
+    <div class="payment-card">
+      <div class="top-tag">Oferta especial de acesso</div>
+
+      <h1>Garanta seu acesso agora</h1>
+      <p class="subtitle">
+        Finalize sua entrada no curso e libere a área do aluno com acesso ao conteúdo inicial.
+      </p>
+
+      <div class="price-box">
+        <span class="small-text">De</span>
+        <div class="old-price">R$ 49,99</div>
+
+        <span class="small-text current-label">Por apenas</span>
+        <h2>R$ 19,99</h2>
+
+        <p>Pagamento único de acesso</p>
+      </div>
+
+      <div class="payment-options">
+        <h3>Escolha a forma de pagamento</h3>
+
+        <label class="payment-option selected-option">
+          <input type="radio" name="pagamento" value="pix" checked>
+          <div>
+            <strong>PIX</strong>
+            <p>Confirmação rápida e prática</p>
+          </div>
+        </label>
+
+        <label class="payment-option">
+          <input type="radio" name="pagamento" value="cartao">
+          <div>
+            <strong>Cartão de crédito</strong>
+            <p>Preencha os dados do cartão para continuar</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="payment-info" id="paymentInfo">
+        <div class="info-box">
+          <h4>Pagamento via PIX</h4>
+          <p>Use a chave abaixo para realizar o pagamento:</p>
+          <div class="pix-key" id="pixKey">11922198936</div>
+
+          <button class="copy-btn" onclick="copiarPix()">Copiar chave PIX</button>
+
+          <p class="note">
+            Após o pagamento, clique em continuar para liberar o acesso.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="secondary-btn" onclick="voltar()">Voltar</button>
+        <button class="main-btn" onclick="confirmarPagamento()">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="pagamento.js"></script>
+</body>
+</html>

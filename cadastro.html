@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Criar Conta - CVIA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a, #1e293b, #111827);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f8fafc;
+      padding: 20px;
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 450px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin-bottom: 15px;
+      color: #38bdf8;
+    }
+
+    p {
+      margin-bottom: 20px;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #38bdf8;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      color: #0f172a;
+    }
+
+    button:hover {
+      background: #0ea5e9;
+      transform: translateY(-2px);
+    }
+
+    a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="form-container">
+    <h1>Criar conta</h1>
+    <p>Preencha seus dados para acessar o curso</p>
+
+    <input type="text" id="nome" placeholder="Seu nome completo">
+    <input type="email" id="email" placeholder="Seu e-mail">
+    <input type="tel" id="celular" placeholder="Seu celular">
+
+    <input type="date" id="nascimento">
+
+    <select id="area">
+      <option value="">Área de interesse</option>
+      <option>Marketing</option>
+      <option>TI</option>
+      <option>Administrativo</option>
+      <option>Financeiro</option>
+      <option>Outro</option>
+    </select>
+
+    <input type="password" id="senha" placeholder="Crie uma senha">
+
+    <button onclick="cadastrar()">Criar conta</button>
+
+    <p>Já tem conta? <a href="login.html">Entrar</a></p>
+  </div>
+
+  <script>
+    function cadastrar() {
+      const nome = document.getElementById("nome").value;
+      const email = document.getElementById("email").value;
+      const celular = document.getElementById("celular").value;
+      const nascimento = document.getElementById("nascimento").value;
+      const area = document.getElementById("area").value;
+      const senha = document.getElementById("senha").value;
+
+      if (!nome || !email || !celular || !nascimento || !senha) {
+        alert("Preencha todos os campos obrigatórios!");
+        return;
+      }
+
+      // Simulação de cadastro (salvando no navegador)
+      const usuario = {
+        nome,
+        email,
+        celular,
+        nascimento,
+        area,
+        senha
+      };
+
+      localStorage.setItem("usuario", JSON.stringify(usuario));
+
+      alert("Conta criada com sucesso!");
+
+      // Redireciona para login
+      window.location.href = "login.html";
+    }
+  </script>
+
+</body>
+</html>
