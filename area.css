@@ -1,4 +1,4 @@
-{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -117,7 +117,12 @@ body {
 .profile-card,
 .lesson-text,
 .video-box,
-.lesson-item {
+.lesson-item,
+.lesson-detail-card,
+.lesson-content-card,
+.lesson-nav-card,
+.module-summary-card,
+.module-status-card {
   background: #1e293b;
   border-radius: 18px;
   padding: 24px;
@@ -146,12 +151,20 @@ body {
 .material-card p,
 .profile-card p,
 .lesson-item p,
-.progress-card p {
+.progress-card p,
+.lesson-detail-card p,
+.lesson-content-card p,
+.lesson-nav-card p,
+.module-summary-card p,
+.module-status-card p {
   color: #cbd5e1;
+  line-height: 1.6;
 }
 
 .main-btn,
-.secondary-btn {
+.secondary-btn,
+.lesson-open-btn,
+.mark-watch-btn {
   margin-top: 18px;
   padding: 12px 18px;
   border: none;
@@ -180,6 +193,22 @@ body {
   background: rgba(56, 189, 248, 0.12);
 }
 
+.lesson-open-btn,
+.mark-watch-btn {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+.lesson-open-btn:hover,
+.mark-watch-btn:hover {
+  background: #0ea5e9;
+}
+
+.mark-watch-btn.completed {
+  background: #22c55e;
+  color: white;
+}
+
 .progress-bar {
   width: 100%;
   height: 12px;
@@ -193,6 +222,7 @@ body {
   width: 20%;
   height: 100%;
   background: #38bdf8;
+  transition: width 0.3s ease;
 }
 
 .grid-cards,
@@ -219,7 +249,12 @@ body {
 .material-card h3,
 .info-card h3,
 .lesson-text h3,
-.lesson-item h4 {
+.lesson-item h4,
+.lesson-detail-card h3,
+.lesson-content-card h3,
+.lesson-nav-card h3,
+.module-summary-card h3,
+.module-status-card h3 {
   margin-bottom: 10px;
 }
 
@@ -262,6 +297,155 @@ body {
   margin-bottom: 14px;
 }
 
+.module-card {
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.module-card:hover:not(.locked-module) {
+  transform: translateY(-4px);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.module-card.active-module {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.15);
+}
+
+.locked-module {
+  cursor: not-allowed;
+  position: relative;
+}
+
+.locked-module::after {
+  content: "Bloqueado até concluir o módulo anterior";
+  display: block;
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: #fca5a5;
+}
+
+.module-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.module-status {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: bold;
+}
+
+.status-open {
+  background: rgba(34, 197, 94, 0.14);
+  color: #4ade80;
+}
+
+.status-locked {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.status-done {
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+}
+
+.lesson-item {
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.lesson-item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.lesson-item.active-lesson {
+  border-color: #38bdf8;
+  background: #243447;
+}
+
+.lesson-item.done-lesson {
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.lesson-chip {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+}
+
+.lesson-chip.done {
+  background: rgba(34, 197, 94, 0.14);
+  color: #4ade80;
+}
+
+.lesson-chip.locked {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.lesson-detail-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.lesson-content-card ul,
+.lesson-content-card ol,
+.module-summary-card ul {
+  margin-top: 12px;
+  padding-left: 20px;
+  color: #cbd5e1;
+  line-height: 1.7;
+}
+
+.lesson-content-card li,
+.module-summary-card li {
+  margin-bottom: 8px;
+}
+
+.lesson-highlight {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.module-summary-wrap {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 35px;
+  color: #94a3b8;
+}
+
 @media (max-width: 980px) {
   .dashboard {
     flex-direction: column;
@@ -275,7 +459,9 @@ body {
   .grid-cards,
   .modules-grid,
   .materials-grid,
-  .lesson-layout {
+  .lesson-layout,
+  .lesson-detail-grid,
+  .module-summary-wrap {
     grid-template-columns: 1fr;
   }
 

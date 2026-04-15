@@ -49,9 +49,9 @@
           <div class="progress-card">
             <h3>Seu progresso</h3>
             <div class="progress-bar">
-              <div class="progress-fill"></div>
+              <div class="progress-fill" id="progressFill"></div>
             </div>
-            <p>20% concluído</p>
+            <p id="progressText">20% concluído</p>
           </div>
         </div>
 
@@ -80,12 +80,60 @@
             </p>
           </div>
         </div>
+
+        <div class="module-summary-wrap" style="margin-top: 24px;">
+          <div class="module-summary-card">
+            <h3>O que você vai aprender</h3>
+            <p>
+              Este curso foi estruturado para te ajudar a entender como os sistemas de triagem funcionam,
+              como adaptar seu currículo para vagas reais, como destacar experiências com mais força
+              e como construir uma candidatura mais estratégica.
+            </p>
+            <ul>
+              <li>Como o ATS filtra currículos antes do recrutador</li>
+              <li>Como melhorar a estrutura do currículo</li>
+              <li>Como usar palavras-chave sem parecer artificial</li>
+              <li>Como transformar tarefas em percepção de valor</li>
+            </ul>
+          </div>
+
+          <div class="module-status-card">
+            <h3>Como avançar no curso</h3>
+            <p>
+              Os módulos seguem uma ordem lógica. Para liberar o próximo módulo,
+              você precisa clicar em <strong>“Marcar como assistida”</strong> em todas as aulas do módulo atual.
+            </p>
+            <p>
+              Isso garante uma progressão mais organizada e ajuda você a absorver o conteúdo na sequência certa.
+            </p>
+          </div>
+        </div>
       </section>
 
       <section id="modulos" class="tab-content">
         <h2 class="section-title">Módulos do curso</h2>
 
-        <div class="modules-grid">
+        <div class="module-summary-wrap">
+          <div class="module-summary-card">
+            <h3 id="moduleSummaryTitle">Módulo 1 — Como os sistemas analisam currículos</h3>
+            <p id="moduleSummaryDescription">
+              Entenda como ATS, filtros automáticos e leitura por palavras-chave impactam sua candidatura.
+            </p>
+            <ul id="moduleSummaryPoints">
+              <li>Entender o que é ATS.</li>
+              <li>Ver como o sistema lê seu currículo.</li>
+              <li>Compreender por que currículos são rejeitados.</li>
+              <li>Descobrir o que faz um currículo passar.</li>
+            </ul>
+          </div>
+
+          <div class="module-status-card" id="moduleStatusBox">
+            <h3>Status do módulo</h3>
+            <p>Progresso do módulo carregando...</p>
+          </div>
+        </div>
+
+        <div class="modules-grid" id="modulesCardsContainer">
           <div class="module-card">
             <span class="module-tag">Módulo 1</span>
             <h3>Como a IA lê seu currículo</h3>
@@ -115,31 +163,47 @@
       <section id="aulas" class="tab-content">
         <h2 class="section-title">Aula em destaque</h2>
 
-        <div class="lesson-layout">
-          <div class="video-box">
-            <div class="video-placeholder">
-              <span>Espaço para vídeo</span>
-              <p>Você poderá inserir aqui um vídeo do YouTube, Vimeo ou aula gravada.</p>
+        <div class="lesson-detail-grid">
+          <div class="lesson-detail-card">
+            <span class="badge" id="currentModuleLabel">Conteúdo do módulo 1</span>
+            <h3 id="lessonTitle">Aula 1.1: O que é ATS</h3>
+            <p id="lessonShortText">
+              Antes de pensar em design, o mais importante é entender como o seu currículo
+              está sendo lido.
+            </p>
+
+            <div class="video-box" style="margin-top: 18px; padding: 0; border: none; background: transparent;">
+              <div class="video-placeholder">
+                <span>Espaço para vídeo</span>
+                <p>Você poderá inserir aqui um vídeo do YouTube, Vimeo ou aula gravada.</p>
+              </div>
             </div>
+
+            <div class="lesson-actions">
+              <button class="main-btn" id="markLessonBtn">Marcar como assistida</button>
+            </div>
+
+            <p id="lessonStatusText" style="margin-top: 16px;">Status: aula disponível para assistir</p>
           </div>
 
-          <div class="lesson-text">
-            <h3>Aula 1: O que faz um currículo ser ignorado</h3>
-            <p>
-              Antes de pensar em design, o mais importante é entender como o seu currículo
-              está sendo lido. Muitas vezes, o problema não está na sua experiência, mas
-              na forma como ela é apresentada.
-            </p>
-            <p>
-              Nesta aula, você vai entender os erros mais comuns que fazem um currículo
-              perder força no processo seletivo, além de enxergar como pequenos ajustes
-              podem melhorar muito sua apresentação profissional.
-            </p>
-            <button class="main-btn">Marcar como assistida</button>
+          <div class="lesson-content-card">
+            <h3>Conteúdo da aula</h3>
+            <div id="lessonContent">
+              <p>
+                Antes de pensar em design, o mais importante é entender como o seu currículo
+                está sendo lido. Muitas vezes, o problema não está na sua experiência, mas
+                na forma como ela é apresentada.
+              </p>
+              <p>
+                Nesta aula, você vai entender os erros mais comuns que fazem um currículo
+                perder força no processo seletivo, além de enxergar como pequenos ajustes
+                podem melhorar muito sua apresentação profissional.
+              </p>
+            </div>
           </div>
         </div>
 
-        <div class="lesson-list">
+        <div class="lesson-list" id="lessonListContainer">
           <div class="lesson-item">
             <h4>Aula 1</h4>
             <p>O que faz um currículo ser ignorado</p>
@@ -195,3 +259,4 @@
 
   <script src="area.js"></script>
 </body>
+</html>
