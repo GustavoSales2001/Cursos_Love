@@ -115,7 +115,7 @@
     }
 
     if (email === usuario.email && senha === usuario.senha) {
-      alert("Login realizado com sucesso!");
+     mostrarToast("Login realizado com sucesso.", "success");
       window.location.href = "pagamento.html";
     } else {
       alert("E-mail ou senha inválidos.");
