@@ -7,7 +7,7 @@ const API_BASE_URL = "https://cursoslove-production.up.railway.app/api";
 let pagamentoAtualId = null;
 let ultimoPixCode = null;
 
-// 🔥 NOVO: impede pagar novamente
+// impede pagar novamente
 const usuarioAtual = JSON.parse(localStorage.getItem("usuario")) || {};
 const jaPagou = usuarioAtual.email
   ? localStorage.getItem(`pagamentoConfirmado_${usuarioAtual.email}`)
@@ -61,7 +61,46 @@ async function atualizarPagamento() {
     paymentInfo.innerHTML = `
       <div class="info-box">
         <h4>Pagamento com cartão</h4>
-        <p>Essa opção está quase pronta, mas ainda precisa da etapa de tokenização com Mercado Pago.</p>
+        <p>Preencha os dados abaixo para continuar:</p>
+
+        <div class="card-form">
+          <div>
+            <label for="nomeCartao">Nome no cartão</label>
+            <input type="text" id="nomeCartao" placeholder="Nome como está no cartão">
+          </div>
+
+          <div>
+            <label for="numeroCartao">Número do cartão</label>
+            <input type="text" id="numeroCartao" placeholder="0000 0000 0000 0000" maxlength="19">
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="validadeCartao">Validade</label>
+              <input type="text" id="validadeCartao" placeholder="MM/AA" maxlength="5">
+            </div>
+
+            <div>
+              <label for="cvvCartao">CVV</label>
+              <input type="text" id="cvvCartao" placeholder="123" maxlength="4">
+            </div>
+          </div>
+
+          <div>
+            <label for="cpfTitular">CPF do titular</label>
+            <input type="text" id="cpfTitular" placeholder="000.000.000-00">
+          </div>
+
+          <div>
+            <label for="parcelas">Parcelamento</label>
+            <select id="parcelas">
+              <option value="1">1x de R$ 19,99</option>
+              <option value="2">2x de R$ 10,00</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="note">Essa opção já aparece na tela, mas ainda depende da tokenização do Mercado Pago para funcionar de verdade. Por enquanto, finalize pelo PIX.</p>
       </div>
     `;
   }
@@ -127,17 +166,25 @@ async function criarPix() {
 }
 
 function copiarPix() {
+  if (!ultimoPixCode) {
+    alert("Nenhum código PIX disponível.");
+    return;
+  }
+
   navigator.clipboard.writeText(ultimoPixCode);
   alert("Copiado!");
 }
 
 async function consultarStatusPagamento() {
+  if (!pagamentoAtualId) {
+    alert("Nenhum pagamento encontrado.");
+    return;
+  }
+
   const response = await fetch(`${API_BASE_URL}/payments/${pagamentoAtualId}`);
   const data = await response.json();
 
   if (data.status === "approved") {
-
-    // 🔥 NOVO: salva por email
     const usuario = JSON.parse(localStorage.getItem("usuario")) || {};
     if (usuario.email) {
       localStorage.setItem(`pagamentoConfirmado_${usuario.email}`, "true");
