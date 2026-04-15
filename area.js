@@ -31,7 +31,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-  const pagamentoConfirmado = localStorage.getItem("pagamentoConfirmado");
+
+  // 🔥 NOVO: valida pagamento por email
+  const pagamentoConfirmado = usuario?.email
+    ? localStorage.getItem(`pagamentoConfirmado_${usuario.email}`)
+    : null;
 
   if (!usuario) {
     alert("Você precisa fazer login primeiro.");
@@ -62,8 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
-      localStorage.removeItem("usuario");
-      localStorage.removeItem("pagamentoConfirmado");
+      localStorage.removeItem("usuario"); // 🔥 NÃO remove pagamento
       alert("Você saiu da área do aluno.");
       window.location.href = "login.html";
     });

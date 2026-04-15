@@ -7,6 +7,17 @@ const API_BASE_URL = "https://cursoslove-production.up.railway.app/api";
 let pagamentoAtualId = null;
 let ultimoPixCode = null;
 
+// 🔥 NOVO: impede pagar novamente
+const usuarioAtual = JSON.parse(localStorage.getItem("usuario")) || {};
+const jaPagou = usuarioAtual.email
+  ? localStorage.getItem(`pagamentoConfirmado_${usuarioAtual.email}`)
+  : null;
+
+if (jaPagou === "true") {
+  alert("Seu acesso já foi liberado. Você não precisa pagar novamente.");
+  window.location.href = "area.html";
+}
+
 radios.forEach(radio => {
   radio.addEventListener("change", atualizarPagamento);
 });
@@ -51,45 +62,6 @@ async function atualizarPagamento() {
       <div class="info-box">
         <h4>Pagamento com cartão</h4>
         <p>Essa opção está quase pronta, mas ainda precisa da etapa de tokenização com Mercado Pago.</p>
-
-        <div class="card-form">
-          <div>
-            <label for="nomeCartao">Nome no cartão</label>
-            <input type="text" id="nomeCartao" placeholder="Nome como está no cartão">
-          </div>
-
-          <div>
-            <label for="numeroCartao">Número do cartão</label>
-            <input type="text" id="numeroCartao" placeholder="0000 0000 0000 0000" maxlength="19">
-          </div>
-
-          <div class="row">
-            <div>
-              <label for="validadeCartao">Validade</label>
-              <input type="text" id="validadeCartao" placeholder="MM/AA" maxlength="5">
-            </div>
-
-            <div>
-              <label for="cvvCartao">CVV</label>
-              <input type="text" id="cvvCartao" placeholder="123" maxlength="4">
-            </div>
-          </div>
-
-          <div>
-            <label for="cpfTitular">CPF do titular</label>
-            <input type="text" id="cpfTitular" placeholder="000.000.000-00">
-          </div>
-
-          <div>
-            <label for="parcelas">Parcelamento</label>
-            <select id="parcelas">
-              <option value="1">1x de R$ 19,99</option>
-              <option value="2">2x de R$ 10,00</option>
-            </select>
-          </div>
-        </div>
-
-        <p class="note">Por enquanto, para pagamento real, use PIX.</p>
       </div>
     `;
   }
@@ -138,95 +110,43 @@ async function criarPix() {
           data.qr_code_base64
             ? `<img 
                 src="data:image/jpeg;base64,${data.qr_code_base64}" 
-                alt="QR Code PIX" 
                 style="max-width:220px;width:100%;display:block;margin:12px auto;border-radius:12px;"
               >`
             : ""
         }
 
-        <div class="pix-key" id="pixKey">${data.qr_code || "PIX gerado, mas sem código disponível."}</div>
+        <div class="pix-key" id="pixKey">${data.qr_code}</div>
 
-        <button class="copy-btn" onclick="copiarPix()">Copiar código PIX</button>
-        <button class="copy-btn" onclick="consultarStatusPagamento()" style="margin-left: 8px;">Verificar pagamento</button>
-
-        <p class="note">Status atual: ${data.status || "pendente"}</p>
+        <button onclick="copiarPix()">Copiar código PIX</button>
+        <button onclick="consultarStatusPagamento()">Verificar pagamento</button>
       </div>
     `;
-  } catch (error) {
-    paymentInfo.innerHTML = `
-      <div class="info-box">
-        <h4>Erro ao gerar PIX</h4>
-        <p>${error.message}</p>
-      </div>
-    `;
-  }
-}
-
-function copiarPix() {
-  const codigo = ultimoPixCode || document.getElementById("pixKey")?.innerText || "";
-
-  if (!codigo) {
-    alert("Nenhum código PIX disponível para copiar.");
-    return;
-  }
-
-  navigator.clipboard.writeText(codigo)
-    .then(() => {
-      alert("Código PIX copiado com sucesso.");
-    })
-    .catch(() => {
-      alert("Não foi possível copiar automaticamente.");
-    });
-}
-
-async function consultarStatusPagamento() {
-  if (!pagamentoAtualId) {
-    alert("Nenhum pagamento encontrado para consulta.");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/payments/${pagamentoAtualId}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || data.details || "Erro ao consultar pagamento.");
-    }
-
-    if (data.status === "approved") {
-      localStorage.setItem("pagamentoConfirmado", "true");
-      alert("Pagamento aprovado! Acesso liberado.");
-      window.location.href = "area.html";
-      return;
-    }
-
-    alert(`Status atual do pagamento: ${data.status}`);
   } catch (error) {
     alert(error.message);
   }
 }
 
-async function confirmarPagamento() {
-  const selecionado = document.querySelector('input[name="pagamento"]:checked');
-  if (!selecionado) {
-    alert("Selecione uma forma de pagamento.");
-    return;
-  }
+function copiarPix() {
+  navigator.clipboard.writeText(ultimoPixCode);
+  alert("Copiado!");
+}
 
-  const metodo = selecionado.value;
+async function consultarStatusPagamento() {
+  const response = await fetch(`${API_BASE_URL}/payments/${pagamentoAtualId}`);
+  const data = await response.json();
 
-  if (metodo === "pix") {
-    if (!pagamentoAtualId) {
-      alert("O PIX ainda não foi gerado.");
-      return;
+  if (data.status === "approved") {
+
+    // 🔥 NOVO: salva por email
+    const usuario = JSON.parse(localStorage.getItem("usuario")) || {};
+    if (usuario.email) {
+      localStorage.setItem(`pagamentoConfirmado_${usuario.email}`, "true");
     }
 
-    await consultarStatusPagamento();
-    return;
-  }
-
-  if (metodo === "cartao") {
-    alert("No momento, finalize pelo PIX. O cartão ainda depende da tokenização do Mercado Pago.");
+    alert("Pagamento aprovado!");
+    window.location.href = "area.html";
+  } else {
+    alert("Pagamento ainda não aprovado");
   }
 }
 
