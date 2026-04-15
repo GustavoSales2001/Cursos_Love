@@ -1,150 +1,153 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Criar Conta - CVIA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #0f172a, #1e293b, #111827);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #f8fafc;
-      padding: 20px;
-    }
-
-    .form-container {
-      width: 100%;
-      max-width: 450px;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
-      border-radius: 16px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      backdrop-filter: blur(10px);
-    }
-
-    h1 {
-      margin-bottom: 15px;
-      color: #38bdf8;
-    }
-
-    p {
-      margin-bottom: 20px;
-      color: #cbd5e1;
-      font-size: 0.95rem;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      background: #0f172a;
-      color: #f8fafc;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #38bdf8;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-      color: #0f172a;
-    }
-
-    button:hover {
-      background: #0ea5e9;
-      transform: translateY(-2px);
-    }
-
-    a {
-      color: #38bdf8;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Currículo que Vence a IA</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
+  <header class="hero">
+    <nav class="navbar">
+      <div class="logo">CVIA</div>
+      <ul class="nav-links">
+        <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#modulos">Módulos</a></li>
+        <li><a href="#beneficios">Benefícios</a></li>
+        <li><a href="#depoimentos">Resultados</a></li>
+      </ul>
+      <a href="#inscricao" class="btn-nav">Quero aprender</a>
+    </nav>
 
-  <div class="form-container">
-    <h1>Criar conta</h1>
-    <p>Preencha seus dados para acessar o curso</p>
+    <div class="hero-content">
+      <div class="hero-text">
+        <p class="tag">Curso online</p>
+        <h1>Currículo que Vence a IA</h1>
+        <p class="subtitle">
+          Aprenda a montar um currículo estratégico, atrativo e preparado para
+          passar pelos filtros automáticos das empresas sem perder sua essência.
+        </p>
 
-    <input type="text" id="nome" placeholder="Seu nome completo">
-    <input type="email" id="email" placeholder="Seu e-mail">
-    <input type="tel" id="celular" placeholder="Seu celular">
+        <div class="hero-buttons">
+          <a href="#inscricao" class="btn-primary">Começar agora</a>
+          <a href="#sobre" class="btn-secondary">Saiba mais</a>
+        </div>
+      </div>
 
-    <input type="date" id="nascimento">
+      <div class="hero-card">
+        <h3>O que você vai aprender</h3>
+        <ul>
+          <li>Como montar um currículo mais forte</li>
+          <li>Como adaptar palavras-chave para vagas</li>
+          <li>Como chamar atenção do recrutador</li>
+          <li>Como evitar erros que fazem seu currículo ser ignorado</li>
+        </ul>
+      </div>
+    </div>
+  </header>
 
-    <select id="area">
-      <option value="">Área de interesse</option>
-      <option>Marketing</option>
-      <option>TI</option>
-      <option>Administrativo</option>
-      <option>Financeiro</option>
-      <option>Outro</option>
-    </select>
+  <section id="sobre" class="section">
+    <div class="container">
+      <h2>Sobre o curso</h2>
+      <p class="section-text">
+        Hoje, muitos currículos são analisados primeiro por sistemas automáticos
+        antes mesmo de chegarem a uma pessoa. Neste curso, você vai entender
+        como esses filtros funcionam e como deixar seu currículo mais estratégico,
+        mais claro e mais competitivo.
+      </p>
+      <p class="section-text">
+        O objetivo é te ajudar a se apresentar melhor, destacar suas qualidades
+        e aumentar suas chances de ser chamado para entrevistas.
+      </p>
+    </div>
+  </section>
 
-    <input type="password" id="senha" placeholder="Crie uma senha">
+  <section id="modulos" class="section alt-bg">
+    <div class="container">
+      <h2>Módulos do curso</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Módulo 1</h3>
+          <p>Entenda como empresas e sistemas analisam currículos hoje.</p>
+        </div>
+        <div class="card">
+          <h3>Módulo 2</h3>
+          <p>Aprenda a estruturar um currículo limpo, direto e profissional.</p>
+        </div>
+        <div class="card">
+          <h3>Módulo 3</h3>
+          <p>Use palavras-chave certas para aumentar sua compatibilidade com vagas.</p>
+        </div>
+        <div class="card">
+          <h3>Módulo 4</h3>
+          <p>Descubra como destacar experiências, resultados e habilidades.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <button onclick="cadastrar()">Criar conta</button>
+  <section id="beneficios" class="section">
+    <div class="container">
+      <h2>Por que esse curso pode te ajudar</h2>
+      <div class="benefits">
+        <div class="benefit-item">
+          <span>✔</span>
+          <p>Mais clareza na hora de montar seu currículo</p>
+        </div>
+        <div class="benefit-item">
+          <span>✔</span>
+          <p>Mais chances de passar pelos filtros automáticos</p>
+        </div>
+        <div class="benefit-item">
+          <span>✔</span>
+          <p>Mais confiança para se candidatar às vagas</p>
+        </div>
+        <div class="benefit-item">
+          <span>✔</span>
+          <p>Estratégias práticas e fáceis de aplicar</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <p>Já tem conta? <a href="login.html">Entrar</a></p>
-  </div>
+  <section id="depoimentos" class="section alt-bg">
+    <div class="container">
+      <h2>Resultados esperados</h2>
+      <div class="testimonials">
+        <div class="testimonial">
+          <p>
+            “Depois de reorganizar meu currículo com mais estratégia, comecei a
+            me sentir muito mais preparada para enviar candidaturas.”
+          </p>
+          <h4>Exemplo de aluna</h4>
+        </div>
+        <div class="testimonial">
+          <p>
+            “Eu não sabia que pequenos ajustes podiam fazer tanta diferença na
+            apresentação profissional.”
+          </p>
+          <h4>Exemplo de aluno</h4>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <script>
-    function cadastrar() {
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const celular = document.getElementById("celular").value;
-      const nascimento = document.getElementById("nascimento").value;
-      const area = document.getElementById("area").value;
-      const senha = document.getElementById("senha").value;
+  <section id="inscricao" class="section cta-section">
+    <div class="container cta-box">
+      <h2>Comece a transformar seu currículo hoje</h2>
+      <p>
+        Dê o primeiro passo para criar um currículo mais forte, mais estratégico
+        e mais preparado para o mercado atual.
+      </p>
+      <a href="login.html" class="btn-primary">Quero acessar o curso</a>
+      <p id="ctaMessage" class="cta-message"></p>
+    </div>
+  </section>
 
-      if (!nome || !email || !celular || !nascimento || !senha) {
-        alert("Preencha todos os campos obrigatórios!");
-        return;
-      }
+  <footer class="footer">
+    <p>© 2026 Currículo que Vence a IA. Todos os direitos reservados.</p>
+  </footer>
 
-      // Simulação de cadastro (salvando no navegador)
-      const usuario = {
-        nome,
-        email,
-        celular,
-        nascimento,
-        area,
-        senha
-      };
-
-      localStorage.setItem("usuario", JSON.stringify(usuario));
-
-      alert("Conta criada com sucesso!");
-
-      // Redireciona para login
-      window.location.href = "login.html";
-    }
-  </script>
-
+  <script src="script.js"></script>
 </body>
+</html>
