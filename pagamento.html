@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -69,4 +70,78 @@
 
   <script src="pagamento.js"></script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagamento - CVIA</title>
+  <link rel="stylesheet" href="pagamento.css">
+</head>
+<body>
+  <div class="payment-page">
+    <div class="payment-card">
+      <div class="top-tag">Acesso ao curso</div>
+
+      <h1>Finalize seu acesso</h1>
+      <p class="subtitle">
+        Para liberar a área do aluno e acessar o conteúdo completo, realize o pagamento da taxa de entrada.
+      </p>
+
+      <div class="price-box">
+        <span class="small-text">Taxa atual</span>
+        <h2>R$ 15,00</h2>
+        <p>Pagamento único para acesso inicial</p>
+      </div>
+
+      <div class="payment-options">
+        <h3>Escolha uma forma de pagamento</h3>
+
+        <label class="payment-option">
+          <input type="radio" name="pagamento" value="pix" checked>
+          <div>
+            <strong>PIX</strong>
+            <p>Confirmação rápida</p>
+          </div>
+        </label>
+
+        <label class="payment-option">
+          <input type="radio" name="pagamento" value="cartao">
+          <div>
+            <strong>Cartão de crédito</strong>
+            <p>Pagamento em etapa futura de integração</p>
+          </div>
+        </label>
+
+        <label class="payment-option">
+          <input type="radio" name="pagamento" value="boleto">
+          <div>
+            <strong>Boleto</strong>
+            <p>Pagamento com compensação posterior</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="payment-info" id="paymentInfo">
+        <div class="info-box">
+          <h4>Pagamento via PIX</h4>
+          <p>Chave PIX:</p>
+          <div class="pix-key">seuemail@exemplo.com</div>
+          <p class="note">
+            Depois você pode integrar um gateway real. Por enquanto, isso serve como modelo visual.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="secondary-btn" onclick="voltar()">Voltar</button>
+        <button class="main-btn" onclick="confirmarPagamento()">Já paguei / Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="pagamento.js"></script>
+</body>
+>>>>>>> 0c0a122d3342087d213b7b04991d165d5f19328f
 </html>
