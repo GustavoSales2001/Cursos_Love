@@ -1,0 +1,17 @@
+{
+  "name": "cvia-backend",
+  "version": "1.0.0",
+  "description": "Backend de pagamentos Mercado Pago para o curso CVIA",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "mercadopago": "^2.12.0"
+  }
+}
