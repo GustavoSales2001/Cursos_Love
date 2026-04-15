@@ -377,6 +377,12 @@ body {
   border-color: rgba(34, 197, 94, 0.35);
 }
 
+.secondary-btn {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
 .lesson-chip {
   display: inline-block;
   margin-top: 12px;
