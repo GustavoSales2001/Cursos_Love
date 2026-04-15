@@ -609,7 +609,33 @@ app.get("/api/payments/:id", async (req, res) => {
 
     if (result.status === "approved") {
       const payerEmail = result?.payer?.email || null;
-      await markAccessReleased(result.id, payerEmail);
+
+      const externalReference = result?.external_reference || null;
+      const userId = externalReference?.startsWith("user_")
+        ? Number(externalReference.split("_")[1])
+        : null;
+
+      if (userId) {
+        await pool.query(
+          `
+          UPDATE users
+          SET access_released = 1, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+          `,
+          [userId]
+        );
+
+        await pool.query(
+          `
+          UPDATE payments
+          SET user_id = COALESCE(user_id, ?), updated_at = CURRENT_TIMESTAMP
+          WHERE payment_id = ?
+          `,
+          [userId, String(result.id)]
+        );
+      } else if (payerEmail) {
+        await markAccessReleased(result.id, payerEmail);
+      }
     }
 
     return res.json({
@@ -689,12 +715,50 @@ app.post("/api/webhooks/mercadopago", async (req, res) => {
       ]
     );
 
-    if (dataId && (topic === "payment" || actionName?.includes("payment"))) {
+    if (dataId) {
       const payment = await paymentClient.get({ id: String(dataId) });
+
+      const [existingRows] = await pool.query(
+        `
+        SELECT user_id, payer_email, access_token
+        FROM payments
+        WHERE payment_id = ?
+        LIMIT 1
+        `,
+        [String(payment.id)]
+      );
+
+      const existingPayment = existingRows[0] || null;
+
+      const payerEmail =
+        payment?.payer?.email ||
+        existingPayment?.payer_email ||
+        null;
+
+      const externalReference = payment?.external_reference || null;
+      const userIdFromReference = externalReference?.startsWith("user_")
+        ? Number(externalReference.split("_")[1])
+        : null;
+
+      const userId = userIdFromReference || existingPayment?.user_id || null;
+
+      if (!payerEmail) {
+        console.log(
+          `Webhook sem payer_email para payment ${payment.id}. Tentando seguir com external_reference/user_id.`
+        );
+      }
+
+      if (!payerEmail && !userId) {
+        console.log(
+          `Webhook ignorado: sem payer_email e sem user_id para payment ${payment.id}`
+        );
+        return res.sendStatus(200);
+      }
 
       await pool.query(
         `
         INSERT INTO payments (
+          user_id,
           payment_id,
           payment_type,
           status,
@@ -704,8 +768,9 @@ app.post("/api/webhooks/mercadopago", async (req, res) => {
           payer_email,
           external_reference,
           raw_response
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
+          user_id = VALUES(user_id),
           status = VALUES(status),
           status_detail = VALUES(status_detail),
           transaction_amount = VALUES(transaction_amount),
@@ -716,27 +781,51 @@ app.post("/api/webhooks/mercadopago", async (req, res) => {
           updated_at = CURRENT_TIMESTAMP
         `,
         [
+          userId,
           String(payment.id),
           payment.payment_method_id || "unknown",
           payment.status || "unknown",
           payment.status_detail || null,
           Number(payment.transaction_amount || 0),
           payment.description || null,
-          payment?.payer?.email || null,
-          payment.external_reference || null,
+          payerEmail || "sem-email@temporario.local",
+          externalReference || null,
           JSON.stringify(payment)
         ]
       );
 
       if (payment.status === "approved") {
-        await markAccessReleased(payment.id, payment?.payer?.email || null);
+        if (userId) {
+          await pool.query(
+            `
+            UPDATE users
+            SET access_released = 1, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            `,
+            [userId]
+          );
+
+          await pool.query(
+            `
+            UPDATE payments
+            SET status = 'approved', user_id = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE payment_id = ?
+            `,
+            [userId, String(payment.id)]
+          );
+
+          console.log(`Acesso liberado para user_id ${userId}`);
+        } else if (payerEmail) {
+          await markAccessReleased(payment.id, payerEmail);
+          console.log(`Acesso liberado para email ${payerEmail}`);
+        }
       }
     }
 
     return res.sendStatus(200);
   } catch (error) {
     console.error("Erro webhook:", error);
-    return res.sendStatus(500);
+    return res.sendStatus(200);
   }
 });
 
