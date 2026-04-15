@@ -1,100 +1,72 @@
-<<<<<<< HEAD
-const tabButtons = document.querySelectorAll(".tab-btn");
-const tabContents = document.querySelectorAll(".tab-content");
+document.addEventListener("DOMContentLoaded", () => {
 
-tabButtons.forEach(button => {
-  button.addEventListener("click", () => {
-    const target = button.getAttribute("data-tab");
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
 
+  tabButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const target = button.getAttribute("data-tab");
+
+      tabButtons.forEach(btn => btn.classList.remove("active"));
+      tabContents.forEach(content => content.classList.remove("active"));
+
+      button.classList.add("active");
+
+      const targetElement = document.getElementById(target);
+      if (targetElement) {
+        targetElement.classList.add("active");
+      }
+    });
+  });
+
+  function abrirTab(tabId) {
     tabButtons.forEach(btn => btn.classList.remove("active"));
     tabContents.forEach(content => content.classList.remove("active"));
 
-    button.classList.add("active");
-    document.getElementById(target).classList.add("active");
-  });
-});
+    const btn = document.querySelector(`[data-tab="${tabId}"]`);
+    const content = document.getElementById(tabId);
 
-function abrirTab(tabId) {
-  tabButtons.forEach(btn => btn.classList.remove("active"));
-  tabContents.forEach(content => content.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+    if (content) content.classList.add("active");
+  }
 
-  document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
-  document.getElementById(tabId).classList.add("active");
-}
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  const pagamentoConfirmado = localStorage.getItem("pagamentoConfirmado");
 
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-const pagamentoConfirmado = localStorage.getItem("pagamentoConfirmado");
+  if (!usuario) {
+    alert("Você precisa fazer login primeiro.");
+    window.location.href = "login.html";
+  } else if (pagamentoConfirmado !== "true") {
+    alert("Você precisa finalizar o pagamento antes de acessar o conteúdo.");
+    window.location.href = "pagamento.html";
+  } else {
 
-if (!usuario) {
-  alert("Você precisa fazer login primeiro.");
-  window.location.href = "login.html";
-} else if (pagamentoConfirmado !== "true") {
-  alert("Você precisa finalizar o pagamento antes de acessar o conteúdo.");
-  window.location.href = "pagamento.html";
-} else {
-  document.getElementById("welcomeText").textContent =
-    `Olá, ${usuario.nome}. Bom te ver por aqui.`;
+    const welcomeText = document.getElementById("welcomeText");
+    if (welcomeText) {
+      welcomeText.textContent = `Olá, ${usuario.nome}. Bom te ver por aqui.`;
+    }
 
-  document.getElementById("perfilNome").textContent = usuario.nome || "-";
-  document.getElementById("perfilEmail").textContent = usuario.email || "-";
-  document.getElementById("perfilCelular").textContent = usuario.celular || "-";
-  document.getElementById("perfilNascimento").textContent = usuario.nascimento || "-";
-  document.getElementById("perfilArea").textContent = usuario.area || "-";
-}
+    const perfilNome = document.getElementById("perfilNome");
+    const perfilEmail = document.getElementById("perfilEmail");
+    const perfilCelular = document.getElementById("perfilCelular");
+    const perfilNascimento = document.getElementById("perfilNascimento");
+    const perfilArea = document.getElementById("perfilArea");
 
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem("usuario");
-  localStorage.removeItem("pagamentoConfirmado");
-  alert("Você saiu da área do aluno.");
-  window.location.href = "login.html";
-=======
-const tabButtons = document.querySelectorAll(".tab-btn");
-const tabContents = document.querySelectorAll(".tab-content");
+    if (perfilNome) perfilNome.textContent = usuario.nome || "-";
+    if (perfilEmail) perfilEmail.textContent = usuario.email || "-";
+    if (perfilCelular) perfilCelular.textContent = usuario.celular || "-";
+    if (perfilNascimento) perfilNascimento.textContent = usuario.nascimento || "-";
+    if (perfilArea) perfilArea.textContent = usuario.area || "-";
+  }
 
-tabButtons.forEach(button => {
-  button.addEventListener("click", () => {
-    const target = button.getAttribute("data-tab");
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("usuario");
+      localStorage.removeItem("pagamentoConfirmado");
+      alert("Você saiu da área do aluno.");
+      window.location.href = "login.html";
+    });
+  }
 
-    tabButtons.forEach(btn => btn.classList.remove("active"));
-    tabContents.forEach(content => content.classList.remove("active"));
-
-    button.classList.add("active");
-    document.getElementById(target).classList.add("active");
-  });
-});
-
-function abrirTab(tabId) {
-  tabButtons.forEach(btn => btn.classList.remove("active"));
-  tabContents.forEach(content => content.classList.remove("active"));
-
-  document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
-  document.getElementById(tabId).classList.add("active");
-}
-
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-const pagamentoConfirmado = localStorage.getItem("pagamentoConfirmado");
-
-if (!usuario) {
-  alert("Você precisa fazer login primeiro.");
-  window.location.href = "login.html";
-} else if (pagamentoConfirmado !== "true") {
-  alert("Você precisa finalizar o pagamento antes de acessar o conteúdo.");
-  window.location.href = "pagamento.html";
-} else {
-  document.getElementById("welcomeText").textContent =
-    `Olá, ${usuario.nome}. Bom te ver por aqui.`;
-
-  document.getElementById("perfilNome").textContent = usuario.nome || "-";
-  document.getElementById("perfilEmail").textContent = usuario.email || "-";
-  document.getElementById("perfilCelular").textContent = usuario.celular || "-";
-  document.getElementById("perfilNascimento").textContent = usuario.nascimento || "-";
-  document.getElementById("perfilArea").textContent = usuario.area || "-";
-}
-
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem("usuario");
-  localStorage.removeItem("pagamentoConfirmado");
-  alert("Você saiu da área do aluno.");
-  window.location.href = "login.html";
->>>>>>> 0c0a122d3342087d213b7b04991d165d5f19328f
 });
