@@ -516,7 +516,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <h3>Status do módulo</h3>
           <p><strong>Progresso:</strong> ${completed}/${module.lessons.length} aulas concluídas</p>
           <p><strong>Situação:</strong> ${done ? "Módulo finalizado" : "Em andamento"}</p>
-          <p><strong>Próximo passo:</strong> ${done ? "Você já pode seguir para o próximo módulo." : "Marque as aulas como assistidas para liberar a próxima etapa."}</p>
+          <p><strong>Próximo passo:</strong> ${done ? "Você já pode seguir para o próximo módulo." : "Marque as aulas como concluídas para liberar a próxima etapa."}</p>
         `;
       }
       return;
@@ -553,7 +553,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <h3>Status do módulo</h3>
         <p><strong>Progresso:</strong> ${completed}/${module.lessons.length} aulas concluídas</p>
         <p><strong>Situação:</strong> ${done ? "Módulo finalizado" : "Em andamento"}</p>
-        <p><strong>Próximo passo:</strong> ${done ? "Você já pode seguir para o próximo módulo." : "Marque as aulas como assistidas para liberar a próxima etapa."}</p>
+        <p><strong>Próximo passo:</strong> ${done ? "Você já pode seguir para o próximo módulo." : "Marque as aulas como concluída para liberar a próxima etapa."}</p>
       `;
     }
   }
@@ -580,7 +580,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <p>${lesson.title}</p>
         <p>${lesson.shortText}</p>
         <span class="lesson-chip ${done ? "done" : ""}">
-          ${done ? "Assistida" : "Disponível"}
+          ${done ? "Concluída" : "Disponível"}
         </span>
       `;
 
@@ -617,12 +617,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const done = isLessonCompleted(lesson.id);
 
     if (markLessonBtn) {
-      markLessonBtn.textContent = done ? "Aula já marcada como assistida" : "Marcar como assistida";
+      markLessonBtn.textContent = done ? "Aula já marcada como concluida" : "Marcar como concluido";
       markLessonBtn.classList.toggle("completed", done);
 
       markLessonBtn.onclick = () => {
         if (isLessonCompleted(lesson.id)) {
-          alert("Essa aula já foi marcada como assistida.");
+          alert("Essa aula já foi marcada como concluida.");
           return;
         }
 
@@ -634,7 +634,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           courseProgress.unlockedModule = module.id + 1;
           alert(`Módulo ${module.id} finalizado com sucesso! O módulo ${module.id + 1} foi liberado.`);
         } else {
-          alert("Aula marcada como assistida com sucesso!");
+          alert("Aula marcada como concluida com sucesso!");
         }
 
         const nextLesson = module.lessons.find(item => !isLessonCompleted(item.id));
@@ -661,7 +661,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (lessonStatusText) {
       lessonStatusText.textContent = done
         ? "Status: aula concluída"
-        : "Status: aula disponível para assistir";
+        : "Status: aula disponível para concluir";
     }
   }
 
