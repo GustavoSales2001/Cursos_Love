@@ -79,6 +79,7 @@ body {
 .content {
   flex: 1;
   padding: 32px;
+  min-width: 0;
 }
 
 .topbar {
@@ -159,6 +160,7 @@ body {
 .module-status-card p {
   color: #cbd5e1;
   line-height: 1.6;
+  word-break: break-word;
 }
 
 .main-btn,
@@ -229,7 +231,7 @@ body {
 .modules-grid,
 .materials-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -333,6 +335,7 @@ body {
   margin-top: 14px;
   font-size: 0.9rem;
   color: #94a3b8;
+  flex-wrap: wrap;
 }
 
 .module-status {
@@ -405,7 +408,7 @@ body {
 
 .lesson-detail-grid {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: 20px;
   margin-bottom: 20px;
 }
@@ -441,7 +444,7 @@ body {
 
 .module-summary-wrap {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   gap: 20px;
   margin-bottom: 22px;
 }
@@ -452,6 +455,74 @@ body {
   color: #94a3b8;
 }
 
+/* Acordeão da trilha */
+.trilha-aulas-accordion {
+  display: block;
+  width: 100%;
+}
+
+.trilha-aulas-accordion summary {
+  list-style: none;
+  display: block;
+  width: 100%;
+}
+
+.trilha-aulas-accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.trilha-aulas-accordion summary.module-summary-card {
+  position: relative;
+  padding-right: 56px;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.trilha-aulas-accordion summary.module-summary-card::after {
+  content: "+";
+  position: absolute;
+  top: 50%;
+  right: 22px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.trilha-aulas-accordion[open] summary.module-summary-card::after {
+  content: "–";
+}
+
+.trilha-aulas-accordion[open] summary.module-summary-card {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.trilha-aulas-accordion > div {
+  display: block;
+  width: 100%;
+}
+
+.module-example-image {
+  width: 100%;
+  height: auto;
+}
+
+/* Tablet */
+@media (max-width: 1200px) {
+  .grid-cards,
+  .modules-grid,
+  .materials-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile / responsivo forte */
 @media (max-width: 980px) {
   .dashboard {
     flex-direction: column;
@@ -459,6 +530,26 @@ body {
 
   .sidebar {
     width: 100%;
+    padding: 18px 14px;
+    gap: 16px;
+  }
+
+  .menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .tab-btn {
+    flex: 1 1 120px;
+    text-align: center;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  .sidebar-footer {
+    margin-top: 8px;
   }
 
   .hero-box,
@@ -472,6 +563,172 @@ body {
   }
 
   .content {
-    padding: 20px;
+    padding: 18px 14px;
+  }
+
+  .topbar {
+    margin-bottom: 22px;
+  }
+
+  .topbar h1 {
+    font-size: 1.8rem;
+    line-height: 1.2;
+  }
+
+  .hero-info h2 {
+    font-size: 1.6rem;
+    line-height: 1.25;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .hero-info,
+  .progress-card,
+  .info-card,
+  .module-card,
+  .material-card,
+  .profile-card,
+  .lesson-text,
+  .video-box,
+  .lesson-item,
+  .lesson-detail-card,
+  .lesson-content-card,
+  .lesson-nav-card,
+  .module-summary-card,
+  .module-status-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .module-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lesson-actions {
+    flex-direction: column;
+  }
+
+  .main-btn,
+  .secondary-btn,
+  .lesson-open-btn,
+  .mark-watch-btn,
+  .logout-btn {
+    width: 100%;
+  }
+
+  .badge {
+    font-size: 0.82rem;
+  }
+
+  .module-summary-card h3,
+  .module-status-card h3,
+  .module-card h3,
+  .lesson-detail-card h3,
+  .lesson-content-card h3 {
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .trilha-aulas-accordion summary.module-summary-card {
+    padding-right: 52px;
+  }
+}
+
+/* Celulares menores */
+@media (max-width: 640px) {
+  .content {
+    padding: 14px 12px;
+  }
+
+  .sidebar {
+    padding: 14px 12px;
+  }
+
+  .brand h2 {
+    font-size: 1.4rem;
+  }
+
+  .brand p {
+    font-size: 0.9rem;
+  }
+
+  .menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tab-btn {
+    flex: unset;
+    width: 100%;
+    font-size: 0.92rem;
+    padding: 11px 10px;
+  }
+
+  .topbar h1 {
+    font-size: 1.55rem;
+  }
+
+  .hero-info h2 {
+    font-size: 1.35rem;
+  }
+
+  .section-title {
+    font-size: 1.35rem;
+  }
+
+  .hero-info,
+  .progress-card,
+  .info-card,
+  .module-card,
+  .material-card,
+  .profile-card,
+  .lesson-item,
+  .lesson-detail-card,
+  .lesson-content-card,
+  .module-summary-card,
+  .module-status-card {
+    padding: 16px;
+  }
+
+  .hero-info p,
+  .info-card p,
+  .module-card p,
+  .lesson-text p,
+  .material-card p,
+  .profile-card p,
+  .lesson-item p,
+  .progress-card p,
+  .lesson-detail-card p,
+  .lesson-content-card p,
+  .lesson-nav-card p,
+  .module-summary-card p,
+  .module-status-card p,
+  .lesson-content-card li,
+  .module-summary-card li {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .lesson-content-card ul,
+  .lesson-content-card ol,
+  .module-summary-card ul {
+    padding-left: 18px;
+  }
+
+  .module-summary-wrap,
+  .hero-box,
+  .lesson-detail-grid {
+    gap: 14px;
+  }
+
+  .grid-cards,
+  .modules-grid,
+  .materials-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 }
