@@ -78,6 +78,40 @@ function normalizePhoneBR(phone = "") {
   return String(phone).replace(/\D/g, "");
 }
 
+/* INCLUSÃO: diagnóstico seguro de ambiente */
+function getEnvStatus() {
+  return {
+    node_env: process.env.NODE_ENV || null,
+    port: port || null,
+    frontend_url_configured: Boolean(process.env.FRONTEND_URL),
+    mysql: {
+      host: process.env.MYSQLHOST || null,
+      port: process.env.MYSQLPORT || null,
+      user: process.env.MYSQLUSER || null,
+      database: process.env.MYSQL_DATABASE || null,
+      password_configured: Boolean(process.env.MYSQLPASSWORD)
+    },
+    mercado_pago: {
+      access_token_configured: Boolean(process.env.MERCADO_PAGO_ACCESS_TOKEN),
+      public_key_configured: Boolean(process.env.MERCADO_PAGO_PUBLIC_KEY),
+      webhook_base_url: process.env.WEBHOOK_BASE_URL || null
+    },
+    whatsapp: {
+      token_configured: Boolean(process.env.WHATSAPP_TOKEN),
+      phone_number_id: process.env.WHATSAPP_PHONE_NUMBER_ID || null,
+      verify_token_configured: Boolean(process.env.WHATSAPP_VERIFY_TOKEN),
+      verify_token_preview: process.env.WHATSAPP_VERIFY_TOKEN
+        ? `${String(process.env.WHATSAPP_VERIFY_TOKEN).slice(0, 6)}...`
+        : null,
+      template_name: process.env.WHATSAPP_TEMPLATE_NAME || null
+    },
+    claude: {
+      api_key_configured: Boolean(process.env.CLAUDE_API_KEY),
+      model: process.env.CLAUDE_MODEL || null
+    }
+  };
+}
+
 async function ensureTables() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -525,6 +559,25 @@ app.get("/api/health", async (_req, res) => {
       ok: false,
       error: "Erro ao validar MySQL",
       details: error.message
+    });
+  }
+});
+
+/* INCLUSÃO: rota para validar ambiente sem expor segredos */
+app.get("/api/health/details", async (_req, res) => {
+  try {
+    await pool.query("SELECT 1");
+    res.json({
+      ok: true,
+      message: "Backend online, MySQL conectado e variáveis carregadas",
+      env: getEnvStatus()
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: "Erro ao validar ambiente",
+      details: error.message,
+      env: getEnvStatus()
     });
   }
 });
@@ -1144,6 +1197,12 @@ app.get("/api/webhooks/whatsapp", (req, res) => {
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
+    console.log("Verificação webhook WhatsApp recebida:", {
+      mode,
+      tokenRecebido: token || null,
+      tokenEsperadoConfigurado: Boolean(process.env.WHATSAPP_VERIFY_TOKEN)
+    });
+
     if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
       return res.status(200).send(challenge);
     }
@@ -1160,6 +1219,8 @@ app.post("/api/webhooks/whatsapp", async (req, res) => {
     const entry = req.body?.entry?.[0];
     const changes = entry?.changes?.[0];
     const value = changes?.value;
+
+    console.log("Webhook WhatsApp payload recebido.");
 
     const message = value?.messages?.[0];
 
