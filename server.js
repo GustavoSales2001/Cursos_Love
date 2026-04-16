@@ -46,7 +46,7 @@ let pool;
 let whatsappJobRunning = false;
 
 /* TESTE: envia apenas para um usuário específico */
-const TEST_ONLE_USER_ID = 7;
+const TEST_ONLY_USER_ID = 7;
 
 async function initDB() {
   pool = mysql.createPool({
