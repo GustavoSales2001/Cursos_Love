@@ -43,6 +43,7 @@ const client = new MercadoPagoConfig({
 const paymentClient = new Payment(client);
 
 let pool;
+let whatsappJobRunning = false;
 
 async function initDB() {
   pool = mysql.createPool({
@@ -71,6 +72,10 @@ function sanitizeCpf(value = "") {
 
 function generateAccessToken() {
   return crypto.randomBytes(24).toString("hex");
+}
+
+function normalizePhoneBR(phone = "") {
+  return String(phone).replace(/\D/g, "");
 }
 
 async function ensureTables() {
@@ -104,6 +109,34 @@ async function ensureTables() {
     await pool.query("ALTER TABLE users ADD COLUMN area VARCHAR(100) NULL");
   }
 
+  if (!columnNames.includes("whatsapp_sent")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN whatsapp_sent TINYINT(1) NOT NULL DEFAULT 0
+    `);
+  }
+
+  if (!columnNames.includes("whatsapp_sent_at")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN whatsapp_sent_at TIMESTAMP NULL DEFAULT NULL
+    `);
+  }
+
+  if (!columnNames.includes("last_whatsapp_message_at")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN last_whatsapp_message_at TIMESTAMP NULL DEFAULT NULL
+    `);
+  }
+
+  if (!columnNames.includes("whatsapp_opt_in")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN whatsapp_opt_in TINYINT(1) NOT NULL DEFAULT 1
+    `);
+  }
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS payments (
       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -134,6 +167,23 @@ async function ensureTables() {
       action_name VARCHAR(100) NULL,
       raw_payload JSON NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS whatsapp_messages (
+      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+      user_id INT NULL,
+      celular VARCHAR(30) NOT NULL,
+      direction ENUM('in','out') NOT NULL,
+      message_text TEXT NULL,
+      wa_message_id VARCHAR(120) NULL,
+      raw_payload JSON NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_celular (celular),
+      CONSTRAINT fk_whatsapp_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE SET NULL
     )
   `);
 }
@@ -247,6 +297,222 @@ async function markAccessReleased(paymentId, email) {
   }
 }
 
+async function saveWhatsappMessage({
+  userId = null,
+  celular,
+  direction,
+  messageText = "",
+  waMessageId = null,
+  rawPayload = {}
+}) {
+  await pool.query(
+    `
+    INSERT INTO whatsapp_messages (
+      user_id, celular, direction, message_text, wa_message_id, raw_payload
+    ) VALUES (?, ?, ?, ?, ?, ?)
+    `,
+    [
+      userId,
+      celular,
+      direction,
+      messageText || null,
+      waMessageId || null,
+      JSON.stringify(rawPayload || {})
+    ]
+  );
+}
+
+async function sendWhatsAppText(to, text) {
+  const url = `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to,
+      type: "text",
+      text: { body: text }
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.error?.message || "Erro ao enviar WhatsApp");
+  }
+
+  return data;
+}
+
+async function sendWhatsAppTemplate(to, templateName = "hello_world") {
+  const url = `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to,
+      type: "template",
+      template: {
+        name: templateName,
+        language: { code: "en_US" }
+      }
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.error?.message || "Erro ao enviar template WhatsApp");
+  }
+
+  return data;
+}
+
+async function getUserByPhone(celular) {
+  const normalized = normalizePhoneBR(celular);
+
+  const [rows] = await pool.query(
+    `
+    SELECT id, name, email, celular, access_released, whatsapp_sent
+    FROM users
+    WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(celular, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') = ?
+    LIMIT 1
+    `,
+    [normalized]
+  );
+
+  return rows[0] || null;
+}
+
+async function getPendingWhatsappUsers() {
+  const [rows] = await pool.query(`
+    SELECT id, name, celular
+    FROM users
+    WHERE access_released = 0
+      AND whatsapp_sent = 0
+      AND whatsapp_opt_in = 1
+      AND celular IS NOT NULL
+      AND celular <> ''
+      AND created_at <= NOW() - INTERVAL 30 MINUTE
+  `);
+
+  return rows;
+}
+
+async function markWhatsappSent(userId) {
+  await pool.query(
+    `
+    UPDATE users
+    SET whatsapp_sent = 1,
+        whatsapp_sent_at = NOW(),
+        last_whatsapp_message_at = NOW(),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+    `,
+    [userId]
+  );
+}
+
+async function maybeGetClaudeReply(messageText, user) {
+  if (!process.env.CLAUDE_API_KEY) {
+    return null;
+  }
+
+  try {
+    const prompt = `
+Você é um atendente comercial de WhatsApp.
+Responda em português do Brasil, curto, natural e objetivo.
+O cliente ainda não pagou o acesso.
+Ajude a concluir a compra ou tirar dúvidas.
+Evite mensagens longas.
+
+Nome do cliente: ${user?.name || "Cliente"}
+Mensagem do cliente: ${messageText}
+    `.trim();
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": process.env.CLAUDE_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        model: process.env.CLAUDE_MODEL || "claude-3-5-sonnet-20241022",
+        max_tokens: 200,
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Erro Claude:", data);
+      return null;
+    }
+
+    return data?.content?.[0]?.text?.trim() || null;
+  } catch (error) {
+    console.error("Erro ao consultar Claude:", error.message);
+    return null;
+  }
+}
+
+async function processPendingWhatsappMessages() {
+  if (whatsappJobRunning) return;
+  whatsappJobRunning = true;
+
+  try {
+    const users = await getPendingWhatsappUsers();
+
+    for (const user of users) {
+      try {
+        const celular = normalizePhoneBR(user.celular);
+
+        if (!celular) continue;
+
+        const templateResponse = await sendWhatsAppTemplate(
+          celular,
+          process.env.WHATSAPP_TEMPLATE_NAME || "hello_world"
+        );
+
+        await saveWhatsappMessage({
+          userId: user.id,
+          celular,
+          direction: "out",
+          messageText: "Template inicial enviado no WhatsApp.",
+          waMessageId: templateResponse?.messages?.[0]?.id || null,
+          rawPayload: templateResponse
+        });
+
+        await markWhatsappSent(user.id);
+
+        console.log(`WhatsApp enviado para user_id ${user.id} - ${celular}`);
+      } catch (err) {
+        console.error(`Erro ao enviar WhatsApp para user_id ${user.id}:`, err.message);
+      }
+    }
+  } catch (error) {
+    console.error("Erro na rotina de WhatsApp:", error.message);
+  } finally {
+    whatsappJobRunning = false;
+  }
+}
+
 app.get("/api/health", async (_req, res) => {
   try {
     await pool.query("SELECT 1");
@@ -267,6 +533,49 @@ app.get("/api/config", (_req, res) => {
   res.json({
     publicKey: process.env.MERCADO_PAGO_PUBLIC_KEY || ""
   });
+});
+
+app.post("/api/chat/start", async (req, res) => {
+  try {
+    const { nome, email, celular, mensagem } = req.body;
+
+    if (!mensagem) {
+      return res.status(400).json({ error: "Mensagem obrigatória" });
+    }
+
+    let user = null;
+
+    if (email) {
+      const [rows] = await pool.query(
+        `
+        SELECT id, name, email, celular, access_released
+        FROM users
+        WHERE email = ?
+        LIMIT 1
+        `,
+        [email]
+      );
+      user = rows[0] || null;
+    }
+
+    const respostaClaude = await maybeGetClaudeReply(mensagem, user);
+
+    const resposta =
+      respostaClaude ||
+      "Oi! Recebi sua mensagem. Posso te ajudar com pagamento, acesso ao curso ou dúvidas gerais.";
+
+    return res.json({
+      success: true,
+      reply: resposta,
+      user: user || { nome, email, celular }
+    });
+  } catch (error) {
+    console.error("Erro /api/chat/start:", error);
+    return res.status(500).json({
+      error: "Erro ao iniciar chat",
+      details: error.message
+    });
+  }
 });
 
 app.post("/api/users/register", async (req, res) => {
@@ -829,6 +1138,86 @@ app.post("/api/webhooks/mercadopago", async (req, res) => {
   }
 });
 
+app.get("/api/webhooks/whatsapp", (req, res) => {
+  try {
+    const mode = req.query["hub.mode"];
+    const token = req.query["hub.verify_token"];
+    const challenge = req.query["hub.challenge"];
+
+    if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+      return res.status(200).send(challenge);
+    }
+
+    return res.sendStatus(403);
+  } catch (error) {
+    console.error("Erro verificação webhook WhatsApp:", error);
+    return res.sendStatus(500);
+  }
+});
+
+app.post("/api/webhooks/whatsapp", async (req, res) => {
+  try {
+    const entry = req.body?.entry?.[0];
+    const changes = entry?.changes?.[0];
+    const value = changes?.value;
+
+    const message = value?.messages?.[0];
+
+    if (!message) {
+      return res.sendStatus(200);
+    }
+
+    const from = normalizePhoneBR(message.from || "");
+    const text = message?.text?.body || "";
+
+    const user = await getUserByPhone(from);
+
+    await saveWhatsappMessage({
+      userId: user?.id || null,
+      celular: from,
+      direction: "in",
+      messageText: text,
+      waMessageId: message.id || null,
+      rawPayload: req.body
+    });
+
+    if (user?.id) {
+      await pool.query(
+        `
+        UPDATE users
+        SET last_whatsapp_message_at = NOW(), updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        `,
+        [user.id]
+      );
+    }
+
+    let reply =
+      "Oi! Vi sua mensagem 😊 Se quiser, posso te ajudar a finalizar seu acesso agora.";
+
+    const claudeReply = await maybeGetClaudeReply(text, user);
+    if (claudeReply) {
+      reply = claudeReply;
+    }
+
+    const sendResponse = await sendWhatsAppText(from, reply);
+
+    await saveWhatsappMessage({
+      userId: user?.id || null,
+      celular: from,
+      direction: "out",
+      messageText: reply,
+      waMessageId: sendResponse?.messages?.[0]?.id || null,
+      rawPayload: sendResponse
+    });
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error("Erro webhook WhatsApp:", error);
+    return res.sendStatus(200);
+  }
+});
+
 async function start() {
   try {
     await initDB();
@@ -837,6 +1226,12 @@ async function start() {
     app.listen(port, () => {
       console.log(`Servidor rodando na porta ${port}`);
     });
+
+    setInterval(() => {
+      processPendingWhatsappMessages();
+    }, 60 * 1000);
+
+    processPendingWhatsappMessages();
   } catch (error) {
     console.error("Erro ao iniciar servidor:", error);
     process.exit(1);
