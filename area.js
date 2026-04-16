@@ -33,6 +33,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   window.abrirTab = abrirTab;
 
+  function scrollToLessonContent() {
+    const lessonContentAnchor = document.getElementById("lessonContentAnchor");
+    if (lessonContentAnchor) {
+      lessonContentAnchor.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  }
+
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
   if (!usuario || !usuario.email) {
@@ -489,6 +499,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderLessons();
         renderLessonDetail();
         abrirTab("aulas");
+
+        setTimeout(() => {
+          scrollToLessonContent();
+        }, 120);
       });
 
       moduleCardsContainer.appendChild(card);
@@ -589,6 +603,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         saveProgress();
         renderLessons();
         renderLessonDetail();
+
+        setTimeout(() => {
+          scrollToLessonContent();
+        }, 80);
       });
 
       lessonListContainer.appendChild(item);

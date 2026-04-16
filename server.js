@@ -45,6 +45,9 @@ const paymentClient = new Payment(client);
 let pool;
 let whatsappJobRunning = false;
 
+/* TESTE: envia apenas para um usuário específico */
+const TEST_ONLE_USER_ID = 7;
+
 async function initDB() {
   pool = mysql.createPool({
     host: process.env.MYSQLHOST,
@@ -428,16 +431,21 @@ async function getUserByPhone(celular) {
 }
 
 async function getPendingWhatsappUsers() {
-  const [rows] = await pool.query(`
+  const [rows] = await pool.query(
+    `
     SELECT id, name, celular
     FROM users
-    WHERE access_released = 0
+    WHERE id = ?
+      AND access_released = 0
       AND whatsapp_sent = 0
       AND whatsapp_opt_in = 1
       AND celular IS NOT NULL
       AND celular <> ''
       AND created_at <= NOW() - INTERVAL 30 MINUTE
-  `);
+    LIMIT 1
+    `,
+    [TEST_ONLY_USER_ID]
+  );
 
   return rows;
 }
