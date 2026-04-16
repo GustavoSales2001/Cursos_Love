@@ -379,6 +379,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const moduleSummaryDescription = document.getElementById("moduleSummaryDescription");
   const moduleSummaryPoints = document.getElementById("moduleSummaryPoints");
   const moduleStatusBox = document.getElementById("moduleStatusBox");
+  const moduleSummaryWrap = document.querySelector("#modulos .module-summary-wrap");
+  const moduleSummaryCard = document.querySelector("#modulos .module-summary-card");
 
   const lessonListContainer = document.getElementById("lessonListContainer");
   const currentModuleLabel = document.getElementById("currentModuleLabel");
@@ -497,6 +499,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     const module = getModuleById(courseProgress.currentModule);
     if (!module) return;
 
+    if (moduleSummaryWrap) {
+      moduleSummaryWrap.style.display = module.id === 1 ? "flex" : "none";
+    }
+
+    if (moduleSummaryCard) {
+      moduleSummaryCard.style.display = module.id === 1 ? "block" : "none";
+    }
+
+    if (module.id !== 1) {
+      if (moduleStatusBox) {
+        const completed = getCompletedCountByModule(module.id);
+        const done = isModuleCompleted(module.id);
+
+        moduleStatusBox.innerHTML = `
+          <h3>Status do módulo</h3>
+          <p><strong>Progresso:</strong> ${completed}/${module.lessons.length} aulas concluídas</p>
+          <p><strong>Situação:</strong> ${done ? "Módulo finalizado" : "Em andamento"}</p>
+          <p><strong>Próximo passo:</strong> ${done ? "Você já pode seguir para o próximo módulo." : "Marque as aulas como assistidas para liberar a próxima etapa."}</p>
+        `;
+      }
+      return;
+    }
+
     if (moduleSummaryTitle) {
       moduleSummaryTitle.textContent = `Módulo ${module.id} — ${module.title}`;
     }
@@ -512,24 +537,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           "Aprender como o sistema lê texto, identifica cargos e interpreta habilidades.",
           "Reconhecer os erros que eliminam bons perfis antes da leitura humana.",
           "Construir uma base estratégica para os próximos módulos."
-        ],
-        2: [
-          "Organizar o currículo em uma sequência lógica e fácil de ler.",
-          "Entender o que entra e o que sai de cada seção.",
-          "Evitar excesso de informação e poluição visual.",
-          "Criar uma estrutura forte para sustentar um currículo mais competitivo."
-        ],
-        3: [
-          "Identificar palavras-chave diretamente da vaga.",
-          "Adaptar o currículo sem mentir nem forçar termos.",
-          "Aumentar compatibilidade com filtros automáticos.",
-          "Mostrar aderência real com mais clareza."
-        ],
-        4: [
-          "Transformar tarefas em impacto profissional.",
-          "Escrever descrições mais fortes e mais estratégicas.",
-          "Valorizar experiências informais e acadêmicas.",
-          "Finalizar um currículo com mais peso e percepção de valor."
         ]
       };
 
@@ -546,7 +553,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <h3>Status do módulo</h3>
         <p><strong>Progresso:</strong> ${completed}/${module.lessons.length} aulas concluídas</p>
         <p><strong>Situação:</strong> ${done ? "Módulo finalizado" : "Em andamento"}</p>
-        <p><strong>Próximo passo:</strong> ${done ? "Você já pode seguir para o próximo módulo." : "Marque as aulas como concluídas para liberar a próxima etapa."}</p>
+        <p><strong>Próximo passo:</strong> ${done ? "Você já pode seguir para o próximo módulo." : "Marque as aulas como assistidas para liberar a próxima etapa."}</p>
       `;
     }
   }
@@ -573,7 +580,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <p>${lesson.title}</p>
         <p>${lesson.shortText}</p>
         <span class="lesson-chip ${done ? "done" : ""}">
-          ${done ? "Concluído" : "Disponível"}
+          ${done ? "Assistida" : "Disponível"}
         </span>
       `;
 
@@ -610,12 +617,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const done = isLessonCompleted(lesson.id);
 
     if (markLessonBtn) {
-      markLessonBtn.textContent = done ? "Aula já marcada como Concluído" : "Marcar como concluída";
+      markLessonBtn.textContent = done ? "Aula já marcada como assistida" : "Marcar como assistida";
       markLessonBtn.classList.toggle("completed", done);
 
       markLessonBtn.onclick = () => {
         if (isLessonCompleted(lesson.id)) {
-          alert("Essa aula já foi marcada como concluída.");
+          alert("Essa aula já foi marcada como assistida.");
           return;
         }
 
@@ -627,7 +634,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           courseProgress.unlockedModule = module.id + 1;
           alert(`Módulo ${module.id} finalizado com sucesso! O módulo ${module.id + 1} foi liberado.`);
         } else {
-          alert("Aula marcada como concluída com sucesso!");
+          alert("Aula marcada como assistida com sucesso!");
         }
 
         const nextLesson = module.lessons.find(item => !isLessonCompleted(item.id));
@@ -654,7 +661,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (lessonStatusText) {
       lessonStatusText.textContent = done
         ? "Status: aula concluída"
-        : "Status: aula disponível para iniciar";
+        : "Status: aula disponível para assistir";
     }
   }
 
