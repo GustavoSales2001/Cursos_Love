@@ -1238,47 +1238,4 @@ async function start() {
   }
 }
 
-app.get("/api/webhooks/whatsapp", (req, res) => {
-  try {
-    const mode = req.query["hub.mode"];
-    const token = req.query["hub.verify_token"];
-    const challenge = req.query["hub.challenge"];
-
-    if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
-      return res.status(200).send(challenge);
-    }
-
-    return res.sendStatus(403);
-  } catch (error) {
-    console.error("Erro verificação webhook WhatsApp:", error);
-    return res.sendStatus(500);
-  }
-});
-
-app.post("/api/webhooks/whatsapp", async (req, res) => {
-  try {
-    console.log("Webhook WhatsApp recebido:", JSON.stringify(req.body, null, 2));
-    return res.sendStatus(200);
-  } catch (error) {
-    console.error("Erro webhook WhatsApp:", error);
-    return res.sendStatus(200);
-  }
-});
-
-async function start() {
-  try {
-    await initDB();
-    await ensureTables();
-
-    app.listen(port, () => {
-      console.log(`Servidor rodando na porta ${port}`);
-    });
-
-    processPendingWhatsappMessages();
-  } catch (error) {
-    console.error("Erro ao iniciar servidor:", error);
-    process.exit(1);
-  }
-}
-
 start();
