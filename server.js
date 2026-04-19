@@ -48,6 +48,11 @@ let whatsappJobRunning = false;
 /* TESTE: envia apenas para um usuário específico */
 const TEST_ONLY_USER_ID = 7;
 
+/* INCLUSÃO: sobrescrita de número apenas para teste */
+const TEST_OVERRIDE_PHONE_BY_USER_ID = {
+  7: "5511933128628"
+};
+
 async function initDB() {
   pool = mysql.createPool({
     host: process.env.MYSQLHOST,
@@ -91,6 +96,17 @@ function normalizePhoneBR(phone = "") {
   }
 
   return digits;
+}
+
+/* INCLUSÃO: resolve número final para teste */
+function getFinalTestPhone(user) {
+  const override = TEST_OVERRIDE_PHONE_BY_USER_ID[user.id];
+
+  if (override) {
+    return normalizePhoneBR(override);
+  }
+
+  return normalizePhoneBR(user.celular);
 }
 
 /* INCLUSÃO: diagnóstico seguro de ambiente */
@@ -535,7 +551,13 @@ async function processPendingWhatsappMessages() {
 
     for (const user of users) {
       try {
-        const celular = normalizePhoneBR(user.celular);
+        const celularBanco = normalizePhoneBR(user.celular);
+        const celular = getFinalTestPhone(user);
+
+        console.log(`user_id ${user.id} | numero vindo do banco: ${user.celular}`);
+        console.log(`user_id ${user.id} | numero normalizado do banco: ${celularBanco}`);
+        console.log(`user_id ${user.id} | numero final para envio: ${celular}`);
+        console.log(`user_id ${user.id} | phone_number_id usado: ${process.env.WHATSAPP_PHONE_NUMBER_ID}`);
 
         if (!celular) continue;
 
