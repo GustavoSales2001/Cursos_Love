@@ -386,7 +386,8 @@ async function saveWhatsappMessage({
 }
 
 async function sendWhatsAppText(to, text) {
-  const url = `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  /* ALTERAÇÃO AQUI: versão da Graph API ajustada para bater com a Meta (v25.0) */
+  const url = `https://graph.facebook.com/v25.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -412,7 +413,8 @@ async function sendWhatsAppText(to, text) {
 }
 
 async function sendWhatsAppTemplate(to, templateName = "hello_world") {
-  const url = `https://graph.facebook.com/v23.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  /* ALTERAÇÃO AQUI: versão da Graph API ajustada para bater com a Meta (v25.0) */
+  const url = `https://graph.facebook.com/v25.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
 
   const response = await fetch(url, {
     method: "POST",
