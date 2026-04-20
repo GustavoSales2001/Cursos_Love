@@ -48,10 +48,14 @@ let whatsappJobRunning = false;
 /* TESTE: envia apenas para um usuário específico */
 const TEST_ONLY_USER_ID = 7;
 
-/* INCLUSÃO: sobrescrita de número apenas para teste */
-const TEST_OVERRIDE_PHONE_BY_USER_ID = {
-  7: "5511933128628"
-};
+/*
+  CORREÇÃO DO ERRO DO WHATSAPP:
+  antes o código sobrescrevia o número do user_id 7 para 5511933128628.
+  isso fazia o backend ignorar o número vindo do banco e enviar para um número
+  diferente do autorizado no Meta.
+
+  agora a função abaixo vai usar SOMENTE o número salvo no banco.
+*/
 
 async function initDB() {
   pool = mysql.createPool({
@@ -98,14 +102,8 @@ function normalizePhoneBR(phone = "") {
   return digits;
 }
 
-/* INCLUSÃO: resolve número final para teste */
+/* CORREÇÃO AQUI: agora usa apenas o número do banco, sem override */
 function getFinalTestPhone(user) {
-  const override = TEST_OVERRIDE_PHONE_BY_USER_ID[user.id];
-
-  if (override) {
-    return normalizePhoneBR(override);
-  }
-
   return normalizePhoneBR(user.celular);
 }
 
