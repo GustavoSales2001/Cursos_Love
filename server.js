@@ -13,9 +13,17 @@ const port = Number(process.env.PORT || 3000);
 app.disable("x-powered-by");
 app.use(express.json());
 
-const allowedOrigins = (process.env.FRONTEND_URL || "")
+function cleanEnv(value = "") {
+  return String(value || "")
+    .trim()
+    .replace(/^"(.*)"$/, "$1")
+    .replace(/^'(.*)'$/, "$1")
+    .trim();
+}
+
+const allowedOrigins = cleanEnv(process.env.FRONTEND_URL)
   .split(",")
-  .map((v) => v.trim())
+  .map((v) => cleanEnv(v))
   .filter(Boolean);
 
 app.use(
@@ -31,12 +39,12 @@ app.use(
   })
 );
 
-if (!process.env.MERCADO_PAGO_ACCESS_TOKEN) {
+if (!cleanEnv(process.env.MERCADO_PAGO_ACCESS_TOKEN)) {
   throw new Error("Defina MERCADO_PAGO_ACCESS_TOKEN no .env");
 }
 
 const client = new MercadoPagoConfig({
-  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+  accessToken: cleanEnv(process.env.MERCADO_PAGO_ACCESS_TOKEN),
   options: { timeout: 5000 }
 });
 
@@ -48,31 +56,50 @@ let whatsappJobRunning = false;
 /* TESTE: envia apenas para um usuário específico */
 const TEST_ONLY_USER_ID = 7;
 
-/*
-  CORREÇÃO DO ERRO DO WHATSAPP:
-  antes o código sobrescrevia o número do user_id 7 para 5511933128628.
-  isso fazia o backend ignorar o número vindo do banco e enviar para um número
-  diferente do autorizado no Meta.
+function getWhatsAppConfig() {
+  const token = cleanEnv(process.env.WHATSAPP_TOKEN);
+  const phoneNumberId = cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID);
+  const templateName = cleanEnv(process.env.WHATSAPP_TEMPLATE_NAME) || "hello_world";
+  const verifyToken = cleanEnv(process.env.WHATSAPP_VERIFY_TOKEN);
+  const apiVersion = cleanEnv(process.env.WHATSAPP_API_VERSION) || "v25.0";
+  const templateLanguage = cleanEnv(process.env.WHATSAPP_TEMPLATE_LANGUAGE) || "en_US";
 
-  agora a função abaixo vai usar SOMENTE o número salvo no banco.
-*/
+  return {
+    token,
+    phoneNumberId,
+    templateName,
+    verifyToken,
+    apiVersion,
+    templateLanguage
+  };
+}
+
+function getWhatsAppMessagesUrl() {
+  const { phoneNumberId, apiVersion } = getWhatsAppConfig();
+
+  if (!phoneNumberId) {
+    throw new Error("WHATSAPP_PHONE_NUMBER_ID não configurado.");
+  }
+
+  return `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
+}
 
 async function initDB() {
   pool = mysql.createPool({
-    host: process.env.MYSQLHOST,
-    port: Number(process.env.MYSQLPORT || 3306),
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    database: process.env.MYSQL_DATABASE,
+    host: cleanEnv(process.env.MYSQLHOST),
+    port: Number(cleanEnv(process.env.MYSQLPORT) || 3306),
+    user: cleanEnv(process.env.MYSQLUSER),
+    password: cleanEnv(process.env.MYSQLPASSWORD),
+    database: cleanEnv(process.env.MYSQL_DATABASE),
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
   });
 
-  console.log("MYSQLHOST:", process.env.MYSQLHOST);
-  console.log("MYSQLPORT:", process.env.MYSQLPORT);
-  console.log("MYSQLUSER:", process.env.MYSQLUSER);
-  console.log("MYSQL_DATABASE:", process.env.MYSQL_DATABASE);
+  console.log("MYSQLHOST:", cleanEnv(process.env.MYSQLHOST));
+  console.log("MYSQLPORT:", cleanEnv(process.env.MYSQLPORT));
+  console.log("MYSQLUSER:", cleanEnv(process.env.MYSQLUSER));
+  console.log("MYSQL_DATABASE:", cleanEnv(process.env.MYSQL_DATABASE));
 
   await pool.query("SELECT 1");
   console.log("MySQL conectado com sucesso.");
@@ -102,41 +129,41 @@ function normalizePhoneBR(phone = "") {
   return digits;
 }
 
-/* CORREÇÃO AQUI: agora usa apenas o número do banco, sem override */
 function getFinalTestPhone(user) {
   return normalizePhoneBR(user.celular);
 }
 
-/* INCLUSÃO: diagnóstico seguro de ambiente */
 function getEnvStatus() {
+  const wa = getWhatsAppConfig();
+
   return {
-    node_env: process.env.NODE_ENV || null,
+    node_env: cleanEnv(process.env.NODE_ENV) || null,
     port: port || null,
-    frontend_url_configured: Boolean(process.env.FRONTEND_URL),
+    frontend_url_configured: Boolean(cleanEnv(process.env.FRONTEND_URL)),
     mysql: {
-      host: process.env.MYSQLHOST || null,
-      port: process.env.MYSQLPORT || null,
-      user: process.env.MYSQLUSER || null,
-      database: process.env.MYSQL_DATABASE || null,
-      password_configured: Boolean(process.env.MYSQLPASSWORD)
+      host: cleanEnv(process.env.MYSQLHOST) || null,
+      port: cleanEnv(process.env.MYSQLPORT) || null,
+      user: cleanEnv(process.env.MYSQLUSER) || null,
+      database: cleanEnv(process.env.MYSQL_DATABASE) || null,
+      password_configured: Boolean(cleanEnv(process.env.MYSQLPASSWORD))
     },
     mercado_pago: {
-      access_token_configured: Boolean(process.env.MERCADO_PAGO_ACCESS_TOKEN),
-      public_key_configured: Boolean(process.env.MERCADO_PAGO_PUBLIC_KEY),
-      webhook_base_url: process.env.WEBHOOK_BASE_URL || null
+      access_token_configured: Boolean(cleanEnv(process.env.MERCADO_PAGO_ACCESS_TOKEN)),
+      public_key_configured: Boolean(cleanEnv(process.env.MERCADO_PAGO_PUBLIC_KEY)),
+      webhook_base_url: cleanEnv(process.env.WEBHOOK_BASE_URL) || null
     },
     whatsapp: {
-      token_configured: Boolean(process.env.WHATSAPP_TOKEN),
-      phone_number_id: process.env.WHATSAPP_PHONE_NUMBER_ID || null,
-      verify_token_configured: Boolean(process.env.WHATSAPP_VERIFY_TOKEN),
-      verify_token_preview: process.env.WHATSAPP_VERIFY_TOKEN
-        ? `${String(process.env.WHATSAPP_VERIFY_TOKEN).slice(0, 6)}...`
-        : null,
-      template_name: process.env.WHATSAPP_TEMPLATE_NAME || null
+      token_configured: Boolean(wa.token),
+      phone_number_id: wa.phoneNumberId || null,
+      verify_token_configured: Boolean(wa.verifyToken),
+      verify_token_preview: wa.verifyToken ? `${wa.verifyToken.slice(0, 6)}...` : null,
+      template_name: wa.templateName || null,
+      api_version: wa.apiVersion,
+      template_language: wa.templateLanguage
     },
     claude: {
-      api_key_configured: Boolean(process.env.CLAUDE_API_KEY),
-      model: process.env.CLAUDE_MODEL || null
+      api_key_configured: Boolean(cleanEnv(process.env.CLAUDE_API_KEY)),
+      model: cleanEnv(process.env.CLAUDE_MODEL) || null
     }
   };
 }
@@ -386,13 +413,13 @@ async function saveWhatsappMessage({
 }
 
 async function sendWhatsAppText(to, text) {
-  /* ALTERAÇÃO AQUI: versão da Graph API ajustada para bater com a Meta (v25.0) */
-  const url = `https://graph.facebook.com/v25.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  const wa = getWhatsAppConfig();
+  const url = getWhatsAppMessagesUrl();
 
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+      Authorization: `Bearer ${wa.token}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
@@ -406,6 +433,7 @@ async function sendWhatsAppText(to, text) {
   const data = await response.json();
 
   if (!response.ok) {
+    console.error("Erro Meta WhatsApp texto:", JSON.stringify(data, null, 2));
     throw new Error(data?.error?.message || "Erro ao enviar WhatsApp");
   }
 
@@ -413,13 +441,13 @@ async function sendWhatsAppText(to, text) {
 }
 
 async function sendWhatsAppTemplate(to, templateName = "hello_world") {
-  /* ALTERAÇÃO AQUI: versão da Graph API ajustada para bater com a Meta (v25.0) */
-  const url = `https://graph.facebook.com/v25.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
+  const wa = getWhatsAppConfig();
+  const url = getWhatsAppMessagesUrl();
 
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
+      Authorization: `Bearer ${wa.token}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
@@ -427,8 +455,8 @@ async function sendWhatsAppTemplate(to, templateName = "hello_world") {
       to,
       type: "template",
       template: {
-        name: templateName,
-        language: { code: "en_US" }
+        name: cleanEnv(templateName || wa.templateName || "hello_world"),
+        language: { code: wa.templateLanguage }
       }
     })
   });
@@ -436,6 +464,7 @@ async function sendWhatsAppTemplate(to, templateName = "hello_world") {
   const data = await response.json();
 
   if (!response.ok) {
+    console.error("Erro Meta WhatsApp template:", JSON.stringify(data, null, 2));
     throw new Error(data?.error?.message || "Erro ao enviar template WhatsApp");
   }
 
@@ -493,7 +522,9 @@ async function markWhatsappSent(userId) {
 }
 
 async function maybeGetClaudeReply(messageText, user) {
-  if (!process.env.CLAUDE_API_KEY) {
+  const claudeKey = cleanEnv(process.env.CLAUDE_API_KEY);
+
+  if (!claudeKey || claudeKey === "sua_chave_real") {
     return null;
   }
 
@@ -512,12 +543,12 @@ Mensagem do cliente: ${messageText}
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        "x-api-key": process.env.CLAUDE_API_KEY,
+        "x-api-key": claudeKey,
         "anthropic-version": "2023-06-01",
         "content-type": "application/json"
       },
       body: JSON.stringify({
-        model: process.env.CLAUDE_MODEL || "claude-3-5-sonnet-20241022",
+        model: cleanEnv(process.env.CLAUDE_MODEL) || "claude-3-5-sonnet-20241022",
         max_tokens: 200,
         messages: [
           {
@@ -557,13 +588,13 @@ async function processPendingWhatsappMessages() {
         console.log(`user_id ${user.id} | numero vindo do banco: ${user.celular}`);
         console.log(`user_id ${user.id} | numero normalizado do banco: ${celularBanco}`);
         console.log(`user_id ${user.id} | numero final para envio: ${celular}`);
-        console.log(`user_id ${user.id} | phone_number_id usado: ${process.env.WHATSAPP_PHONE_NUMBER_ID}`);
+        console.log(`user_id ${user.id} | phone_number_id usado: ${getWhatsAppConfig().phoneNumberId}`);
 
         if (!celular) continue;
 
         const templateResponse = await sendWhatsAppTemplate(
           celular,
-          process.env.WHATSAPP_TEMPLATE_NAME || "hello_world"
+          getWhatsAppConfig().templateName || "hello_world"
         );
 
         await saveWhatsappMessage({
@@ -605,7 +636,6 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
-/* INCLUSÃO: rota para validar ambiente sem expor segredos */
 app.get("/api/health/details", async (_req, res) => {
   try {
     await pool.query("SELECT 1");
@@ -626,7 +656,7 @@ app.get("/api/health/details", async (_req, res) => {
 
 app.get("/api/config", (_req, res) => {
   res.json({
-    publicKey: process.env.MERCADO_PAGO_PUBLIC_KEY || ""
+    publicKey: cleanEnv(process.env.MERCADO_PAGO_PUBLIC_KEY) || ""
   });
 });
 
@@ -835,8 +865,9 @@ app.post("/api/payments/pix", async (req, res) => {
       email: payer.email
     });
 
-    const notificationUrl = process.env.WEBHOOK_BASE_URL
-      ? `${process.env.WEBHOOK_BASE_URL}/api/webhooks/mercadopago`
+    const webhookBaseUrl = cleanEnv(process.env.WEBHOOK_BASE_URL);
+    const notificationUrl = webhookBaseUrl
+      ? `${webhookBaseUrl}/api/webhooks/mercadopago`
       : undefined;
 
     const externalReference = `user_${user.id}`;
@@ -925,8 +956,9 @@ app.post("/api/payments/card", async (req, res) => {
       email: payer.email
     });
 
-    const notificationUrl = process.env.WEBHOOK_BASE_URL
-      ? `${process.env.WEBHOOK_BASE_URL}/api/webhooks/mercadopago`
+    const webhookBaseUrl = cleanEnv(process.env.WEBHOOK_BASE_URL);
+    const notificationUrl = webhookBaseUrl
+      ? `${webhookBaseUrl}/api/webhooks/mercadopago`
       : undefined;
 
     const externalReference = `user_${user.id}`;
@@ -1054,46 +1086,6 @@ app.get("/api/payments/:id", async (req, res) => {
     return res.status(500).json({
       error: "Erro ao consultar pagamento",
       details: error?.message || "Erro desconhecido"
-    });
-  }
-});
-
-app.get("/api/payments/access/:paymentId", async (req, res) => {
-  try {
-    const { paymentId } = req.params;
-
-    const [rows] = await pool.query(
-      `
-      SELECT
-        p.payment_id,
-        p.status,
-        p.status_detail,
-        p.access_token,
-        p.payer_email,
-        u.access_released
-      FROM payments p
-      LEFT JOIN users u ON u.id = p.user_id
-      WHERE p.payment_id = ?
-      LIMIT 1
-      `,
-      [String(paymentId)]
-    );
-
-    if (!rows.length) {
-      return res.status(404).json({
-        error: "Pagamento não encontrado"
-      });
-    }
-
-    return res.json({
-      success: true,
-      payment: rows[0]
-    });
-  } catch (error) {
-    console.error("Erro ao consultar liberação:", error);
-    return res.status(500).json({
-      error: "Erro ao consultar liberação",
-      details: error.message
     });
   }
 });
@@ -1238,14 +1230,15 @@ app.get("/api/webhooks/whatsapp", (req, res) => {
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
+    const wa = getWhatsAppConfig();
 
     console.log("Verificação webhook WhatsApp recebida:", {
       mode,
       tokenRecebido: token || null,
-      tokenEsperadoConfigurado: Boolean(process.env.WHATSAPP_VERIFY_TOKEN)
+      tokenEsperadoConfigurado: Boolean(wa.verifyToken)
     });
 
-    if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    if (mode === "subscribe" && token === wa.verifyToken) {
       return res.status(200).send(challenge);
     }
 
