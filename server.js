@@ -592,23 +592,26 @@ async function processPendingWhatsappMessages() {
 
         if (!celular) continue;
 
-        const templateResponse = await sendWhatsAppTemplate(
-          celular,
-          getWhatsAppConfig().templateName || "hello_world"
-        );
+        const mensagemInicial = `Oi, tudo bem? 😊
+
+Vi que você se interessou pelo curso e queria saber se ficou alguma dúvida para finalizar seu acesso.
+
+Posso te ajudar?`;
+
+        const textResponse = await sendWhatsAppText(celular, mensagemInicial);
 
         await saveWhatsappMessage({
           userId: user.id,
           celular,
           direction: "out",
-          messageText: "Template inicial enviado no WhatsApp.",
-          waMessageId: templateResponse?.messages?.[0]?.id || null,
-          rawPayload: templateResponse
+          messageText: mensagemInicial,
+          waMessageId: textResponse?.messages?.[0]?.id || null,
+          rawPayload: textResponse
         });
 
         await markWhatsappSent(user.id);
 
-        console.log(`WhatsApp enviado para user_id ${user.id} - ${celular}`);
+        console.log(`WhatsApp em texto enviado para user_id ${user.id} - ${celular}`);
       } catch (err) {
         console.error(`Erro ao enviar WhatsApp para user_id ${user.id}:`, err.message);
       }
