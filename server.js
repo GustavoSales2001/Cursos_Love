@@ -54,7 +54,7 @@ let pool;
 let whatsappJobRunning = false;
 
 /* TESTE: envia apenas para um usuário específico */
-const TEST_ONLY_USER_ID = 7;
+const TEST_ONLY_USER_IDS = [7, 125];
 
 function getWhatsAppConfig() {
   const token = cleanEnv(process.env.WHATSAPP_TOKEN);
@@ -492,16 +492,15 @@ async function getPendingWhatsappUsers() {
     `
     SELECT id, name, celular
     FROM users
-    WHERE id = ?
+    WHERE id IN (?, ?)
       AND access_released = 0
       AND whatsapp_sent = 0
       AND whatsapp_opt_in = 1
       AND celular IS NOT NULL
       AND celular <> ''
-      AND created_at <= NOW() - INTERVAL 30 MINUTE
-    LIMIT 1
+      AND created_at <= NOW() - INTERVAL 3 MINUTE
     `,
-    [TEST_ONLY_USER_ID]
+    TEST_ONLY_USER_IDS
   );
 
   return rows;
@@ -590,13 +589,23 @@ async function processPendingWhatsappMessages() {
         console.log(`user_id ${user.id} | numero final para envio: ${celular}`);
         console.log(`user_id ${user.id} | phone_number_id usado: ${getWhatsAppConfig().phoneNumberId}`);
 
-        if (!celular) continue;
+                if (!celular) continue;
 
-        const mensagemInicial = `Oi, tudo bem? 😊
+        const mensagensTeste = [
+          `Oi, tudo bem? 😊
 
-Vi que você se interessou pelo curso e queria saber se ficou alguma dúvida para finalizar seu acesso.
+Vi que você se interessou pelo curso… ficou alguma dúvida pra finalizar seu acesso?`,
 
-Posso te ajudar?`;
+          `Fala! 👀
+
+Você chegou bem perto de garantir o acesso ao curso… quer que eu te ajude a finalizar?`,
+
+          `Oi! 😊
+
+Vi seu interesse aqui no curso. Posso te ajudar a liberar o acesso rapidinho?`
+        ];
+
+        const mensagemInicial = mensagensTeste[Math.floor(Math.random() * mensagensTeste.length)];
 
         const textResponse = await sendWhatsAppText(celular, mensagemInicial);
 
@@ -1291,13 +1300,40 @@ app.post("/api/webhooks/whatsapp", async (req, res) => {
       );
     }
 
-    let reply =
-      "Oi! Vi sua mensagem 😊 Se quiser, posso te ajudar a finalizar seu acesso agora.";
+    let reply = "";
 
-    const claudeReply = await maybeGetClaudeReply(text, user);
-    if (claudeReply) {
-      reply = claudeReply;
-    }
+const msg = text.toLowerCase();
+
+if (msg.includes("preço") || msg.includes("valor")) {
+  reply = "O valor varia conforme a fase, mas posso te mandar direto com desconto agora se quiser 😉";
+} 
+else if (msg.includes("link")) {
+  reply = "Te envio agora o link pra finalizar rapidinho 👇";
+} 
+else if (msg.includes("como funciona")) {
+  reply = "É um material direto ao ponto, mostrando exatamente o que você precisa pra passar nas plataformas e conseguir vaga.";
+} 
+else if (msg.includes("não tenho dinheiro") || msg.includes("caro")) {
+  reply = "Te entendo… mas pensa que isso é justamente pra te ajudar a ganhar mais. Posso te explicar melhor rapidinho.";
+} 
+else if (msg.includes("tenho interesse") || msg.includes("quero")) {
+  reply = "Perfeito 🔥 então bora garantir seu acesso agora, é bem rápido.";
+} 
+else {
+  reply = "Boa pergunta 😊 posso te explicar tudo sim. Mas me diz, o que você quer entender melhor?";
+}
+
+    //const claudeReply = await maybeGetClaudeReply(text, user);
+    //if (claudeReply) {
+      //reply = claudeReply;
+    //}
+
+    if (!reply) {
+  const claudeReply = await maybeGetClaudeReply(text, user);
+  if (claudeReply) {
+    reply = claudeReply;
+  }
+}
 
     const sendResponse = await sendWhatsAppText(from, reply);
 
