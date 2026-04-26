@@ -227,6 +227,34 @@ async function ensureTables() {
     `);
   }
 
+  if (!columnNames.includes("whatsapp_followup_count")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN whatsapp_followup_count TINYINT(1) NOT NULL DEFAULT 0
+    `);
+  }
+
+  if (!columnNames.includes("whatsapp_followup_finished")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN whatsapp_followup_finished TINYINT(1) NOT NULL DEFAULT 0
+    `);
+  }
+
+  if (!columnNames.includes("last_customer_message_at")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN last_customer_message_at TIMESTAMP NULL DEFAULT NULL
+    `);
+  }
+
+  if (!columnNames.includes("last_bot_message_at")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN last_bot_message_at TIMESTAMP NULL DEFAULT NULL
+    `);
+  }
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS payments (
       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -513,11 +541,101 @@ async function markWhatsappSent(userId) {
     SET whatsapp_sent = 1,
         whatsapp_sent_at = NOW(),
         last_whatsapp_message_at = NOW(),
+        last_bot_message_at = NOW(),
+        whatsapp_followup_count = 0,
+        whatsapp_followup_finished = 0,
         updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
     `,
     [userId]
   );
+}
+
+function buildCustomerReply(text = "") {
+  const msg = String(text || "").toLowerCase();
+
+  const linkCurso = "https://gustavosales2001.github.io/Cursos_Love/";
+  const contatoHumano = "11933128628";
+
+  if (msg.includes("preço") || msg.includes("valor") || msg.includes("quanto") || msg.includes("custa")) {
+    return `O curso está com condição especial de desconto por esse link 👇
+
+${linkCurso}
+
+É só fazer o cadastro. Se você já tiver cadastro, entre com seu login que o pagamento aparece com desconto.`;
+  }
+
+  if (msg.includes("link") || msg.includes("comprar") || msg.includes("pagar") || msg.includes("desconto")) {
+    return `Perfeito 😊 segue o link com desconto:
+
+${linkCurso}
+
+Faça seu cadastro. Se já tiver conta, entre com ela e finalize o pagamento com desconto.`;
+  }
+
+  if (msg.includes("como funciona") || msg.includes("funciona") || msg.includes("curso") || msg.includes("explica")) {
+    return `Funciona de forma bem prática 😊
+
+O curso te ajuda a montar um currículo mais estratégico, com estrutura clara, palavras-chave certas e mais preparado para passar pelos filtros automáticos das empresas.
+
+Quer que eu te mande o link com desconto?`;
+  }
+
+  if (msg.includes("gupy") || msg.includes("linkedin") || msg.includes("ats") || msg.includes("ia") || msg.includes("filtro")) {
+    return `Boa pergunta 👀
+
+Hoje muitas empresas usam filtros automáticos antes do currículo chegar em uma pessoa. O curso mostra como organizar o currículo com palavras-chave, clareza e estratégia para aumentar suas chances.
+
+Quer acessar com desconto?`;
+  }
+
+  if (msg.includes("não tenho dinheiro") || msg.includes("caro") || msg.includes("depois") || msg.includes("sem dinheiro")) {
+    return `Te entendo totalmente.
+
+Mas a ideia do curso é justamente te ajudar a se posicionar melhor para conquistar oportunidades melhores. Posso te mandar o link com desconto pra você ver com calma?`;
+  }
+
+  if (msg.includes("sim") || msg.includes("quero") || msg.includes("manda") || msg.includes("pode mandar") || msg.includes("tenho interesse")) {
+    return `Perfeito 🔥
+
+Aqui está o link com desconto:
+
+${linkCurso}
+
+Faça o cadastro. Se já tiver cadastro, entre com ele e finalize o pagamento com desconto.`;
+  }
+
+  if (msg.includes("cadastro") || msg.includes("login") || msg.includes("entrar")) {
+    return `É simples 😊
+
+Acesse:
+
+${linkCurso}
+
+Se ainda não tiver conta, faça o cadastro. Se já tiver, entre com seu login e siga para o pagamento com desconto.`;
+  }
+
+  if (msg.includes("obrigado") || msg.includes("obrigada") || msg.includes("valeu")) {
+    return `Imagina 😊
+
+Se quiser garantir o acesso com desconto, é só entrar por aqui:
+
+${linkCurso}`;
+  }
+
+  if (msg.includes("humano") || msg.includes("atendente") || msg.includes("falar com alguém")) {
+    return `Claro 😊
+
+Se preferir falar direto comigo, chama nesse WhatsApp:
+
+https://wa.me/55${contatoHumano}`;
+  }
+
+  return `Boa pergunta 😊
+
+Esse curso foi feito para te ajudar a montar um currículo mais forte, estratégico e preparado para os filtros das empresas.
+
+Quer que eu te mande o link com desconto?`;
 }
 
 async function maybeGetClaudeReply(messageText, user) {
@@ -1293,36 +1411,17 @@ app.post("/api/webhooks/whatsapp", async (req, res) => {
       await pool.query(
         `
         UPDATE users
-        SET last_whatsapp_message_at = NOW(), updated_at = CURRENT_TIMESTAMP
+        SET last_whatsapp_message_at = NOW(),
+            last_customer_message_at = NOW(),
+            whatsapp_followup_finished = 1,
+            updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
         `,
         [user.id]
       );
     }
 
-    let reply = "";
-
-const msg = text.toLowerCase();
-
-if (msg.includes("preço") || msg.includes("valor")) {
-  reply = "O valor varia conforme a fase, mas posso te mandar direto com desconto agora se quiser 😉";
-} 
-else if (msg.includes("link")) {
-  reply = "Te envio agora o link pra finalizar rapidinho 👇";
-} 
-else if (msg.includes("como funciona")) {
-  reply = "É um material direto ao ponto, mostrando exatamente o que você precisa pra passar nas plataformas e conseguir vaga.";
-} 
-else if (msg.includes("não tenho dinheiro") || msg.includes("caro")) {
-  reply = "Te entendo… mas pensa que isso é justamente pra te ajudar a ganhar mais. Posso te explicar melhor rapidinho.";
-} 
-else if (msg.includes("tenho interesse") || msg.includes("quero")) {
-  reply = "Perfeito 🔥 então bora garantir seu acesso agora, é bem rápido.";
-} 
-else {
-  reply = "Boa pergunta 😊 posso te explicar tudo sim. Mas me diz, o que você quer entender melhor?";
-}
-
+    let reply = buildCustomerReply(text);
     //const claudeReply = await maybeGetClaudeReply(text, user);
     //if (claudeReply) {
       //reply = claudeReply;
@@ -1353,6 +1452,114 @@ else {
   }
 });
 
+const FOLLOWUP_INTERVAL_MINUTES = 5;
+const MAX_FOLLOWUPS = 3;
+
+function getFollowupMessage(followupCount) {
+  const linkCurso = "https://gustavosales2001.github.io/Cursos_Love/";
+  const contatoHumano = "11933128628";
+
+  const mensagens = [
+    `Oi 😊 passando só pra saber se ficou alguma dúvida sobre o curso ou sobre o acesso com desconto.`,
+
+    `Vi que você ainda não finalizou. Quer que eu te explique rapidinho como funciona o cadastro e pagamento?`,
+
+    `Última mensagem por aqui 😊
+
+Se quiser garantir o acesso com desconto, é só entrar no link:
+
+${linkCurso}
+
+Se preferir falar direto comigo, chama aqui:
+
+https://wa.me/55${contatoHumano}`
+  ];
+
+  return mensagens[followupCount] || null;
+}
+
+async function getUsersForWhatsappFollowUp() {
+  const [rows] = await pool.query(
+    `
+    SELECT id, name, celular, whatsapp_followup_count
+    FROM users
+    WHERE id IN (?, ?)
+      AND access_released = 0
+      AND whatsapp_sent = 1
+      AND whatsapp_opt_in = 1
+      AND whatsapp_followup_finished = 0
+      AND whatsapp_followup_count < ?
+      AND celular IS NOT NULL
+      AND celular <> ''
+      AND last_bot_message_at <= NOW() - INTERVAL ? MINUTE
+      AND NOT EXISTS (
+        SELECT 1
+        FROM whatsapp_messages wm
+        WHERE wm.user_id = users.id
+          AND wm.direction = 'in'
+          AND wm.created_at >= users.whatsapp_sent_at
+      )
+    `,
+    [...TEST_ONLY_USER_IDS, MAX_FOLLOWUPS, FOLLOWUP_INTERVAL_MINUTES]
+  );
+
+  return rows;
+}
+
+async function processWhatsappFollowUps() {
+  try {
+    const users = await getUsersForWhatsappFollowUp();
+
+    for (const user of users) {
+      try {
+        const celular = getFinalTestPhone(user);
+        if (!celular) continue;
+
+        const followupCount = Number(user.whatsapp_followup_count || 0);
+        const message = getFollowupMessage(followupCount);
+
+        if (!message) continue;
+
+        const sendResponse = await sendWhatsAppText(celular, message);
+
+        await saveWhatsappMessage({
+          userId: user.id,
+          celular,
+          direction: "out",
+          messageText: message,
+          waMessageId: sendResponse?.messages?.[0]?.id || null,
+          rawPayload: sendResponse
+        });
+
+        const nextCount = followupCount + 1;
+
+        await pool.query(
+          `
+          UPDATE users
+          SET whatsapp_followup_count = ?,
+              whatsapp_followup_finished = ?,
+              last_bot_message_at = NOW(),
+              last_whatsapp_message_at = NOW(),
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+          `,
+          [
+            nextCount,
+            nextCount >= MAX_FOLLOWUPS ? 1 : 0,
+            user.id
+          ]
+        );
+
+        console.log(`Follow-up ${nextCount} enviado para user_id ${user.id} - ${celular}`);
+      } catch (error) {
+        console.error(`Erro no follow-up para user_id ${user.id}:`, error.message);
+      }
+    }
+  } catch (error) {
+    console.error("Erro geral no processo de follow-up:", error.message);
+  }
+}
+
 async function start() {
   try {
     await initDB();
@@ -1366,7 +1573,12 @@ async function start() {
       processPendingWhatsappMessages();
     }, 60 * 1000);
 
+    setInterval(() => {
+      processWhatsappFollowUps();
+    }, 60 * 1000);
+
     processPendingWhatsappMessages();
+    processWhatsappFollowUps();
   } catch (error) {
     console.error("Erro ao iniciar servidor:", error);
     process.exit(1);
