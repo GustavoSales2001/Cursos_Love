@@ -551,313 +551,1459 @@ async function markWhatsappSent(userId) {
   );
 }
 
-function hasAny(msg, words = []) {
-  return words.some((word) => msg.includes(word));
-}
-
 function buildCustomerReply(text = "", user = null) {
-  const msg = String(text || "").toLowerCase();
+  const rawMsg = String(text || "");
+  const msg = normalizeText(rawMsg);
 
   const linkCurso = "https://gustavosales2001.github.io/Cursos_Love/";
-  const contatoHumano = "11933128628";
-  const nome = user?.name ? user.name.split(" ")[0] : "";
+  const whatsappMilene = "5511922198936"; // Especialista Milene - dúvidas sobre currículo, curso e orientação
+  const whatsappGustavo = "5511933128628"; // Gustavo Desenvolvedor - erro, acesso, login, bug e problemas técnicos
 
+  const nome = user?.name ? user.name.split(" ")[0] : "";
   const saudacao = nome ? `${nome}, ` : "";
 
-  // 1. PAGAMENTO / PIX / CARTÃO
-  if (hasAny(msg, ["pagamento", "pagar", "pix", "cartão", "cartao", "boleto", "mercado pago"])) {
-    return `${saudacao}o pagamento é feito pela página do curso 😊
-
-Você acessa por aqui:
-
-${linkCurso}
-
-Depois é só fazer o cadastro ou entrar com seu login e seguir para a tela de pagamento.
-
-Se aparecer algum erro, me manda o print que eu te ajudo a resolver.`;
+  function normalizeText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
   }
 
-  // 2. PREÇO / VALOR
-  if (hasAny(msg, ["preço", "valor", "quanto", "custa", "custo"])) {
-    return `O curso está com condição especial pelo link com desconto 👇
-
-${linkCurso}
-
-A ideia é ser um acesso acessível pra quem quer melhorar o currículo e aumentar as chances em processos seletivos.`;
+  function hasAny(text, keywords) {
+    return keywords.some(k => text.includes(normalizeText(k)));
   }
 
-  // 3. LINK / COMPRAR / DESCONTO
-  if (hasAny(msg, ["link", "comprar", "desconto", "promoção", "promocao", "cupom"])) {
-    return `Perfeito 😊
-
-Aqui está o link com desconto:
-
-${linkCurso}
-
-Faça seu cadastro. Se já tiver conta, entre com seu login e finalize o pagamento por lá.`;
+  function linkMilene() {
+    return `https://wa.me/${whatsappMilene}`;
   }
 
-  // 4. QUER SABER MAIS SOBRE O CURSO
-  if (hasAny(msg, ["saber mais", "mais informações", "mais informacoes", "me explica", "explica", "como funciona", "funciona"])) {
+  function linkGustavo() {
+    return `https://wa.me/${whatsappGustavo}`;
+  }
+
+  // =====================================================
+  // 1. SAUDAÇÃO / INÍCIO DE CONVERSA
+  // =====================================================
+  if (hasAny(msg, ["oi", "ola", "olá", "bom dia", "boa tarde", "boa noite", "eai", "e aí", "opa"])) {
+    return `${saudacao}oi 😊
+
+Que bom que você chamou!
+
+Antes de te mandar qualquer coisa, me conta rapidinho: você quer entender melhor o curso ou está com alguma dúvida sobre currículo, vagas, IA, Gupy, LinkedIn ou processos seletivos?
+
+Pode falar tranquilo. A ideia aqui é te ajudar primeiro, sem pressa.`;
+  }
+
+  // =====================================================
+  // 2. TUDO BEM / QUEBRA DE GELO
+  // =====================================================
+  if (hasAny(msg, ["tudo bem", "td bem", "como vai", "como voce esta", "como você está"])) {
+    return `Tudo certo por aqui 😊
+
+E com você?
+
+Me conta um pouco da sua situação: você já tem currículo pronto, está começando agora ou está mandando currículo e não recebendo retorno?
+
+Com isso consigo te orientar melhor.`;
+  }
+
+  // =====================================================
+  // 3. DÚVIDA GERAL
+  // =====================================================
+  if (hasAny(msg, ["tenho duvida", "tenho dúvida", "duvida", "dúvida", "nao entendi", "não entendi", "pode explicar", "explica melhor"])) {
+    return `${saudacao}claro, pode perguntar 😊
+
+Se for dúvida sobre currículo, vaga, curso, IA, Gupy, LinkedIn ou como melhorar suas chances nos processos seletivos, posso te orientar por aqui.
+
+Se for algo mais específico do seu caso, recomendo falar com a especialista Milene, porque ela consegue te ajudar com mais atenção:
+
+👉 ${linkMilene()}
+
+Mas pode me mandar sua dúvida aqui primeiro também.`;
+  }
+
+  // =====================================================
+  // 4. SOBRE O CURSO / COMO FUNCIONA
+  // =====================================================
+  if (hasAny(msg, ["como funciona", "funciona", "me explica", "saber mais", "mais informacoes", "mais informações", "sobre o curso", "curso"])) {
     return `Claro 😊
 
-O curso “Currículo que Vence a IA” ensina você a montar um currículo mais estratégico para passar melhor pelos filtros automáticos das empresas.
+O curso “Currículo que Vence a IA” foi criado para ajudar pessoas que estão enviando currículo e não conseguem retorno, ou que querem montar um currículo mais estratégico.
 
-Você aprende:
+Hoje muitas empresas usam filtros automáticos, como IA, ATS, Gupy e outros sistemas. Então não basta ter experiência: o currículo precisa estar organizado de um jeito que esses sistemas consigam ler e entender.
 
-✔ Como a IA/ATS lê seu currículo  
-✔ Como organizar as informações do jeito certo  
-✔ Como usar palavras-chave sem parecer artificial  
-✔ Como adaptar o currículo para cada vaga  
-✔ Como evitar erros que fazem o currículo ser ignorado  
+No curso você aprende:
 
-Quer que eu te mande o link com desconto?`;
+✔ como a IA analisa um currículo  
+✔ como organizar suas experiências  
+✔ como usar palavras-chave da vaga  
+✔ como evitar erros que eliminam seu currículo  
+✔ como montar uma versão mais profissional  
+✔ como adaptar o currículo para diferentes vagas  
+
+Se quiser uma orientação mais personalizada antes de acessar, chama a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 5. ATS / IA / GUPY / LINKEDIN
-  if (hasAny(msg, ["ia", "ats", "gupy", "linkedin", "filtro", "robô", "robo", "automático", "automatico"])) {
+  // =====================================================
+  // 5. IA / ATS / GUPY / ROBÔ
+  // =====================================================
+  if (hasAny(msg, ["ia", "ats", "gupy", "robo", "robô", "filtro", "sistema automatico", "sistema automático", "triagem automatica", "triagem automática"])) {
     return `Boa pergunta 👀
 
 Hoje muitas empresas usam sistemas automáticos para filtrar currículos antes do recrutador ver.
 
-Esses sistemas procuram:
+Esses sistemas procuram principalmente:
 
-✔ palavras-chave da vaga  
-✔ cargos e experiências compatíveis  
+✔ palavras-chave parecidas com a vaga  
+✔ cargo e área de atuação  
+✔ experiências bem descritas  
+✔ formação e cursos  
 ✔ organização clara  
-✔ informações fáceis de identificar  
+✔ informações fáceis de encontrar  
 
-O curso te mostra como estruturar o currículo para não perder força nessa primeira triagem.
+O problema é que muita gente tem capacidade, mas o currículo está escrito de um jeito que o sistema não entende bem.
 
-Quer acessar com desconto?`;
+O curso te ensina a ajustar isso de forma prática, sem inventar informação e sem deixar o currículo artificial.
+
+Se quiser tirar dúvida sobre o seu caso, fala com a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 6. MÓDULOS / AULAS / CONTEÚDO
-  if (hasAny(msg, ["módulo", "modulo", "módulos", "modulos", "aula", "aulas", "conteúdo", "conteudo", "material", "materiais"])) {
-    return `O curso é dividido em módulos bem práticos:
+  // =====================================================
+  // 6. PREÇO / VALOR / CUSTO
+  // =====================================================
+  if (hasAny(msg, ["preco", "preço", "valor", "quanto custa", "custa", "custo", "investimento"])) {
+    return `Você consegue ver o valor atualizado direto na página do curso:
 
-1️⃣ Como a IA lê seu currículo  
-2️⃣ Estrutura que chama atenção  
-3️⃣ Palavras-chave certas  
-4️⃣ Currículo final estratégico  
+${linkCurso}
 
-Também tem materiais de apoio, como checklist, modelo base e PDFs dos módulos.
+Antes de decidir, vale pensar assim: o objetivo do curso é te ajudar a melhorar um ponto que pode estar travando suas oportunidades — o currículo.
 
-Quer que eu te mande o link com desconto?`;
+Se você está enviando currículo e quase não recebe retorno, talvez o problema não seja sua capacidade, mas a forma como suas informações estão sendo apresentadas.
+
+Se quiser conversar antes para entender se faz sentido para o seu caso, chama a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 7. PRIMEIRO EMPREGO / SEM EXPERIÊNCIA
-  if (hasAny(msg, ["primeiro emprego", "sem experiência", "sem experiencia", "nunca trabalhei", "não tenho experiência", "nao tenho experiencia"])) {
+  // =====================================================
+  // 7. LINK / ACESSAR / COMPRAR
+  // =====================================================
+  if (hasAny(msg, ["link", "acessar", "comprar", "quero comprar", "onde compro", "onde acesso", "pagina", "página"])) {
+    return `Claro 😊
+
+Você pode acessar por aqui:
+
+${linkCurso}
+
+Mas antes de entrar, se tiver qualquer dúvida sobre o curso, currículo ou se ele serve para o seu momento, pode perguntar.
+
+Se preferir falar com uma pessoa direto, a especialista é a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 8. DESCONTO / PROMOÇÃO / CUPOM
+  // =====================================================
+  if (hasAny(msg, ["desconto", "promocao", "promoção", "cupom", "oferta", "condicao especial", "condição especial"])) {
+    return `A condição disponível aparece direto na página do curso:
+
+${linkCurso}
+
+O mais importante é você analisar se o conteúdo faz sentido para o que você precisa agora.
+
+Se sua dificuldade é currículo, falta de retorno, Gupy, IA ou como se apresentar melhor nas vagas, esse curso foi feito justamente para isso.
+
+Para dúvidas antes de acessar, chama a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 9. PAGAMENTO / PIX / CARTÃO / BOLETO
+  // =====================================================
+  if (hasAny(msg, ["pagamento", "pagar", "pix", "cartao", "cartão", "boleto", "mercado pago", "credito", "crédito", "debito", "débito"])) {
+    return `O pagamento é feito pela própria página do curso:
+
+${linkCurso}
+
+Você acessa, faz seu cadastro ou entra com login, e segue para a parte de pagamento.
+
+Se aparecer erro, tela travada, pagamento não carregar, problema de login ou qualquer falha técnica, o ideal é falar direto com o Gustavo, desenvolvedor:
+
+👉 ${linkGustavo()}
+
+Se a dúvida for sobre o curso ou se ele serve para você, chama a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 10. ERRO / BUG / PROBLEMA TÉCNICO
+  // =====================================================
+  if (hasAny(msg, ["erro", "bug", "travou", "nao abre", "não abre", "pagina nao abre", "página não abre", "deu problema", "problema tecnico", "problema técnico", "falha", "carregando", "tela branca", "nao carrega", "não carrega"])) {
+    return `Entendi 👀
+
+Isso parece ser algo técnico, então o melhor caminho é falar direto com o Gustavo, que é o desenvolvedor.
+
+Ele consegue verificar erro de página, acesso, login, pagamento travado ou qualquer problema técnico.
+
+👉 ${linkGustavo()}
+
+Se puder, mande também um print da tela e explique em qual parte travou. Isso ajuda ele a resolver mais rápido.`;
+  }
+
+  // =====================================================
+  // 11. LOGIN / SENHA / ACESSO / CADASTRO
+  // =====================================================
+  if (hasAny(msg, ["login", "senha", "cadastro", "entrar", "acesso", "area do aluno", "área do aluno", "nao consigo acessar", "não consigo acessar", "liberar acesso"])) {
+    return `Você acessa pela página:
+
+${linkCurso}
+
+Se ainda não tiver conta, faça o cadastro.  
+Se já tiver conta, entre com seu login.
+
+Agora, se estiver dando erro, senha não funciona, acesso não libera, página trava ou aparece alguma mensagem estranha, fale com o Gustavo:
+
+👉 ${linkGustavo()}
+
+Ele é o responsável por resolver problemas técnicos e de acesso.`;
+  }
+
+  // =====================================================
+  // 12. MÓDULOS / AULAS / CONTEÚDO
+  // =====================================================
+  if (hasAny(msg, ["modulo", "módulo", "modulos", "módulos", "aula", "aulas", "conteudo", "conteúdo", "material", "materiais", "pdf", "checklist"])) {
+    return `O curso é organizado para ser direto e prático.
+
+Você aprende sobre:
+
+1️⃣ como a IA e os sistemas ATS analisam currículos  
+2️⃣ como estruturar melhor suas informações  
+3️⃣ como escrever experiências de forma mais estratégica  
+4️⃣ como usar palavras-chave da vaga  
+5️⃣ como adaptar o currículo para cada oportunidade  
+6️⃣ como evitar erros comuns que atrapalham a triagem  
+7️⃣ como deixar o currículo mais claro para recrutadores  
+
+A ideia não é só “fazer um currículo bonito”, mas montar um currículo que comunique melhor seu valor.
+
+Se quiser entender se o conteúdo serve para o seu caso, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 13. PRIMEIRO EMPREGO / SEM EXPERIÊNCIA
+  // =====================================================
+  if (hasAny(msg, ["primeiro emprego", "sem experiencia", "sem experiência", "nunca trabalhei", "nao tenho experiencia", "não tenho experiência", "sem registro", "sem carteira assinada"])) {
     return `Serve sim 😊
 
-Mesmo sem experiência formal, você pode montar um currículo mais forte destacando:
+Mesmo sem experiência formal, dá para montar um currículo mais forte.
 
-✔ formação  
+Você pode destacar:
+
 ✔ cursos  
+✔ formação  
 ✔ habilidades  
-✔ projetos  
-✔ experiências informais  
-✔ objetivo profissional  
+✔ projetos pessoais  
+✔ trabalhos informais  
+✔ voluntariado  
+✔ objetivos profissionais  
+✔ disponibilidade e vontade de aprender  
 
-O curso te ajuda a organizar tudo isso de forma mais estratégica.
+O erro de muita gente é deixar o currículo vazio ou muito genérico. O curso ajuda a organizar essas informações de um jeito mais profissional.
 
-Quer acessar com desconto?`;
+Se quiser uma orientação mais direta para primeiro emprego, chama a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 8. ESTÁGIO / JOVEM APRENDIZ
-  if (hasAny(msg, ["estágio", "estagio", "jovem aprendiz", "aprendiz", "faculdade"])) {
+  // =====================================================
+  // 14. ESTÁGIO / JOVEM APRENDIZ / FACULDADE
+  // =====================================================
+  if (hasAny(msg, ["estagio", "estágio", "jovem aprendiz", "aprendiz", "faculdade", "universidade", "estudante"])) {
     return `Serve muito para estágio e jovem aprendiz 😊
 
-Nesses casos, o currículo precisa mostrar potencial, organização e clareza, mesmo sem muita experiência.
+Nesses casos, o recrutador não espera uma experiência enorme. Ele procura potencial, organização, clareza e compatibilidade com a vaga.
 
-O curso ajuda você a montar uma estrutura mais profissional e alinhada com as vagas.
+O currículo precisa mostrar bem:
 
-Quer o link com desconto?`;
+✔ sua formação  
+✔ cursos complementares  
+✔ habilidades  
+✔ projetos acadêmicos  
+✔ objetivo profissional  
+✔ disponibilidade  
+✔ vontade de aprender  
+
+O curso te ajuda a transformar isso em um currículo mais apresentável e mais alinhado com as vagas.
+
+Para uma dúvida mais específica, fale com a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 9. JÁ TENHO CURRÍCULO
-  if (hasAny(msg, ["já tenho currículo", "ja tenho curriculo", "currículo pronto", "curriculo pronto", "meu currículo", "meu curriculo"])) {
+  // =====================================================
+  // 15. JÁ TENHO CURRÍCULO PRONTO
+  // =====================================================
+  if (hasAny(msg, ["ja tenho curriculo", "já tenho currículo", "curriculo pronto", "currículo pronto", "meu curriculo", "meu currículo", "ja fiz curriculo", "já fiz currículo"])) {
     return `Melhor ainda 😊
 
-Se você já tem currículo, o curso te ajuda a revisar e melhorar o que já existe.
+Se você já tem currículo, o curso pode te ajudar a melhorar o que já existe.
 
-Você vai conseguir identificar:
+Muitas vezes o problema não é começar do zero, mas ajustar pontos como:
 
-✔ erros de estrutura  
+✔ excesso de informação  
 ✔ falta de palavras-chave  
-✔ informações genéricas  
-✔ pontos que podem ser valorizados melhor  
-✔ ajustes para passar melhor pelos filtros  
+✔ experiências mal descritas  
+✔ objetivo muito genérico  
+✔ layout confuso  
+✔ informações que o sistema não lê bem  
+✔ currículo igual para todas as vagas  
 
-Quer acessar com desconto?`;
+O curso te mostra como revisar com mais estratégia.
+
+Se quiser conversar sobre seu caso antes, chama a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 10. NÃO CONSIGO VAGA / NÃO CHAMAM
-  if (hasAny(msg, ["não consigo emprego", "nao consigo emprego", "não chamam", "nao chamam", "não tenho retorno", "nao tenho retorno", "mando currículo", "mando curriculo"])) {
+  // =====================================================
+  // 16. NÃO RECEBE RETORNO / NÃO CHAMAM
+  // =====================================================
+  if (hasAny(msg, ["nao chamam", "não chamam", "nao tenho retorno", "não tenho retorno", "mando curriculo", "mando currículo", "envio curriculo", "envio currículo", "ninguem chama", "ninguém chama", "nunca me chamam"])) {
     return `Entendo totalmente.
 
-Muitas vezes o problema não é falta de capacidade, mas a forma como o currículo está sendo apresentado.
+Isso é uma das situações mais comuns: a pessoa envia currículo para várias vagas e quase nunca recebe resposta.
 
-Se ele estiver confuso, genérico ou sem palavras-chave, pode ser ignorado antes mesmo de chegar no recrutador.
+Nem sempre isso significa que você não tem capacidade. Muitas vezes o currículo:
+
+✔ não tem palavras-chave da vaga  
+✔ está genérico demais  
+✔ não mostra resultados  
+✔ está desorganizado  
+✔ não conversa com o cargo desejado  
+✔ não passa bem pelos filtros automáticos  
 
 O curso foi feito justamente para corrigir isso.
 
-Quer que eu te mande o acesso com desconto?`;
+Se quiser ajuda para entender o que pode estar acontecendo no seu caso, fale com a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 11. MUDANÇA DE ÁREA
-  if (hasAny(msg, ["mudar de área", "mudar de area", "transição", "transicao", "trocar de área", "trocar de area"])) {
-    return `Serve muito bem para isso 😊
+  // =====================================================
+  // 17. MUDANÇA DE ÁREA / TRANSIÇÃO
+  // =====================================================
+  if (hasAny(msg, ["mudar de area", "mudar de área", "transicao", "transição", "trocar de area", "trocar de área", "nova area", "nova área", "migrar de area", "migrar de área"])) {
+    return `Serve muito para transição de área 😊
 
-Na transição de área, o currículo precisa mostrar suas habilidades de forma estratégica e conectar sua experiência anterior com a vaga desejada.
+Nesse caso, o currículo precisa fazer uma ponte entre o que você já sabe e o que a nova vaga exige.
 
-O curso te ensina a adaptar o currículo para oportunidades diferentes sem parecer forçado.
+O segredo é valorizar:
 
-Quer acessar com desconto?`;
+✔ habilidades transferíveis  
+✔ experiências que se conectam com a nova área  
+✔ cursos recentes  
+✔ projetos  
+✔ objetivo claro  
+✔ palavras-chave da nova função  
+
+Se o currículo ficar focado só na área antiga, o recrutador pode não entender sua mudança.
+
+Para uma orientação mais personalizada, chama a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 12. TEMPO / DURAÇÃO
-  if (hasAny(msg, ["quanto tempo", "duração", "duracao", "demora", "rápido", "rapido"])) {
-    return `O curso foi pensado para ser direto e prático 😊
+  // =====================================================
+  // 18. TEMPO / DURAÇÃO
+  // =====================================================
+  if (hasAny(msg, ["quanto tempo", "duracao", "duração", "demora", "rapido", "rápido", "tempo de curso", "em quanto tempo"])) {
+    return `O curso foi pensado para ser direto, prático e aplicável.
 
-Você pode assistir no seu ritmo e já aplicar melhorias no currículo desde as primeiras aulas.
+A ideia não é você passar semanas só vendo teoria. O foco é entender o que precisa mudar e aplicar no seu currículo.
 
-A ideia não é enrolar com teoria, é ajudar você a ajustar seu currículo de forma estratégica.
+Você pode assistir no seu ritmo e já começar a melhorar seu currículo conforme avança nas aulas.
 
-Quer receber o link com desconto?`;
+Se sua dúvida for sobre acesso, página ou login, fale com Gustavo:
+
+👉 ${linkGustavo()}
+
+Se for sobre conteúdo ou se serve para você, fale com Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 13. CELULAR / COMPUTADOR
-  if (hasAny(msg, ["celular", "computador", "notebook", "pc"])) {
+  // =====================================================
+  // 19. CELULAR / COMPUTADOR
+  // =====================================================
+  if (hasAny(msg, ["celular", "computador", "notebook", "pc", "tablet", "assistir pelo celular", "da pra ver no celular", "dá pra ver no celular"])) {
     return `Você pode acessar pelo celular ou computador 😊
 
-Para assistir às aulas, o celular já resolve.
+Para assistir às aulas, o celular já ajuda bastante.
 
-Mas para editar o currículo com mais facilidade, o computador ou notebook costuma ser melhor.
+Mas para editar o currículo com mais conforto, geralmente computador ou notebook facilita, porque você consegue mexer melhor em arquivo, texto, PDF, Word ou Canva.
 
-Quer o link de acesso com desconto?`;
+Se tiver problema técnico para acessar, fale com Gustavo:
+
+👉 ${linkGustavo()}`;
   }
 
-  // 14. CERTIFICADO
-  if (hasAny(msg, ["certificado", "certificação", "certificacao"])) {
+  // =====================================================
+  // 20. CERTIFICADO
+  // =====================================================
+  if (hasAny(msg, ["certificado", "certificacao", "certificação", "tem certificado", "recebo certificado"])) {
     return `Boa pergunta 😊
 
-O foco principal do curso é te ajudar a melhorar seu currículo na prática.
+O foco principal do curso é te ajudar a melhorar seu currículo na prática e aumentar suas chances de passar melhor pelas triagens.
 
-Sobre certificado, recomendo verificar na própria página do curso ou falar direto comigo por aqui:
+Sobre certificado e detalhes específicos da emissão, o ideal é confirmar direto com a especialista Milene:
 
-https://wa.me/55${contatoHumano}`;
+👉 ${linkMilene()}
+
+Ela consegue te passar a informação mais certinha.`;
   }
 
-  // 15. GARANTIA / CONFIANÇA / GOLPE
-  if (hasAny(msg, ["é confiável", "e confiavel", "confiável", "confiavel", "golpe", "seguro", "segurança", "seguranca"])) {
-    return `Entendo sua dúvida 😊
+  // =====================================================
+  // 21. CONFIANÇA / SEGURANÇA / GOLPE
+  // =====================================================
+  if (hasAny(msg, ["confiavel", "confiável", "golpe", "seguro", "seguranca", "segurança", "e seguro", "é seguro", "posso confiar"])) {
+    return `Entendo sua preocupação 😊
 
-O acesso é feito pela página oficial do curso, com cadastro e área do aluno.
+É normal querer confirmar antes de acessar qualquer curso.
 
-Lá dentro você encontra os módulos, aulas e materiais de apoio.
-
-Pode acessar por aqui:
+O acesso é feito pela página oficial:
 
 ${linkCurso}
 
-Se tiver qualquer dificuldade, me manda print que eu te ajudo.`;
+Lá você consegue ver as informações e seguir com o cadastro.
+
+Se sua dúvida for sobre o conteúdo, fale com a Milene:
+
+👉 ${linkMilene()}
+
+Se aparecer erro técnico ou problema de acesso, fale com o Gustavo:
+
+👉 ${linkGustavo()}`;
   }
 
-  // 16. OBJEÇÃO: CARO / SEM DINHEIRO
-  if (hasAny(msg, ["caro", "sem dinheiro", "não tenho dinheiro", "nao tenho dinheiro", "depois eu pago", "tô sem", "to sem"])) {
-    return `Eu te entendo.
+  // =====================================================
+  // 22. CARO / SEM DINHEIRO / OBJEÇÃO FINANCEIRA
+  // =====================================================
+  if (hasAny(msg, ["caro", "sem dinheiro", "nao tenho dinheiro", "não tenho dinheiro", "to sem", "tô sem", "depois eu pago", "agora nao posso", "agora não posso"])) {
+    return `Eu entendo de verdade.
 
-Mas pensa comigo: se o currículo estiver fraco ou mal estruturado, você pode continuar perdendo oportunidades sem saber o motivo.
+Ninguém gosta de gastar sem ter certeza se vai ajudar.
 
-O curso é justamente para te ajudar a corrigir isso e se posicionar melhor nas vagas.
+Mas pensa por esse lado: se você está mandando currículo e não recebe retorno, pode estar perdendo oportunidades por causa de algo que dá para ajustar.
 
-Posso te mandar o link com desconto para você analisar com calma?`;
+Um currículo melhor não garante emprego, mas pode aumentar suas chances de ser visto, chamado e avançar no processo.
+
+Se quiser conversar antes para entender se vale para o seu momento, fale com a Milene:
+
+👉 ${linkMilene()}`;
   }
 
-  // 17. VOU PENSAR / DEPOIS
-  if (hasAny(msg, ["vou pensar", "depois", "mais tarde", "outro dia", "qualquer coisa", "ver depois"])) {
+  // =====================================================
+  // 23. VOU PENSAR / DEPOIS
+  // =====================================================
+  if (hasAny(msg, ["vou pensar", "depois", "mais tarde", "outro dia", "ver depois", "qualquer coisa", "vou ver", "preciso pensar"])) {
     return `Claro, sem problema 😊
 
-Só não deixa parado por muito tempo, porque cada vaga enviada com um currículo mal ajustado pode ser uma oportunidade perdida.
+É bom analisar com calma mesmo.
 
-Vou deixar o link aqui caso queira ver com calma:
+Só não deixa seu currículo parado por muito tempo se você já está buscando vaga, porque cada candidatura com um currículo mal ajustado pode ser uma oportunidade perdida.
 
-${linkCurso}`;
-  }
+Se surgir qualquer dúvida, fala com a Milene:
 
-  // 18. FUNCIONA MESMO / VALE A PENA
-  if (hasAny(msg, ["funciona mesmo", "vale a pena", "dá certo", "da certo", "resultado", "garante emprego", "garantia de emprego"])) {
-    return `Vale principalmente se você manda currículo e quase não recebe retorno.
+👉 ${linkMilene()}
 
-O curso não promete emprego garantido, mas te ensina a melhorar algo essencial: como seu currículo é lido por sistemas e recrutadores.
-
-Isso pode aumentar suas chances de avançar nos processos.
-
-Quer acessar com desconto?`;
-  }
-
-  // 19. QUER QUE FAÇA O CURRÍCULO
-  if (hasAny(msg, ["faz meu currículo", "faz meu curriculo", "monta pra mim", "você monta", "voce monta", "fazer pra mim"])) {
-    return `Eu posso te orientar 😊
-
-Mas o curso foi feito para você aprender a montar e melhorar seu próprio currículo com estratégia.
-
-Assim você consegue adaptar para várias vagas, não depender de uma única versão.
-
-Quer que eu te mande o acesso com desconto?`;
-  }
-
-  // 20. ACESSO / LOGIN / CADASTRO
-  if (hasAny(msg, ["cadastro", "login", "entrar", "acesso", "senha", "área do aluno", "area do aluno"])) {
-    return `É simples 😊
-
-Acesse:
-
-${linkCurso}
-
-Se ainda não tiver conta, faça o cadastro.
-
-Se já tiver conta, entre com seu login e siga para o pagamento/liberação do acesso.
-
-Se travar em alguma parte, me manda print que eu te ajudo.`;
-  }
-
-  // 21. CLIENTE DISSE SIM / QUERO
-  if (hasAny(msg, ["sim", "quero", "manda", "pode mandar", "tenho interesse", "me envie", "envia"])) {
-    return `Perfeito 🔥
-
-Aqui está o link com desconto:
-
-${linkCurso}
-
-👉 Faça o cadastro  
-👉 Entre com seu login se já tiver conta  
-👉 Finalize o pagamento  
-👉 Depois o acesso é liberado na área do aluno`;
-  }
-
-  // 22. OBRIGADO
-  if (hasAny(msg, ["obrigado", "obrigada", "valeu", "vlw"])) {
-    return `Imagina 😊
-
-Se quiser garantir o acesso com desconto, é só entrar por aqui:
+E se quiser ver a página depois:
 
 ${linkCurso}`;
   }
 
-  // 23. HUMANO
-  if (hasAny(msg, ["humano", "atendente", "falar com alguém", "falar com alguem", "suporte", "ajuda humana"])) {
+  // =====================================================
+  // 24. FUNCIONA MESMO / VALE A PENA
+  // =====================================================
+  if (hasAny(msg, ["funciona mesmo", "vale a pena", "da certo", "dá certo", "resultado", "garante emprego", "garantia de emprego", "vou conseguir emprego"])) {
+    return `É importante ser transparente 😊
+
+O curso não promete emprego garantido, porque isso depende de vaga, perfil, entrevista, mercado e outros fatores.
+
+Mas ele te ajuda em uma parte muito importante: melhorar como seu currículo é lido por sistemas e recrutadores.
+
+Se hoje você envia currículo e não recebe retorno, ajustar a estrutura, as palavras-chave e a forma de apresentar sua experiência pode fazer diferença.
+
+Para entender se faz sentido para seu caso, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 25. QUER QUE FAÇA O CURRÍCULO
+  // =====================================================
+  if (hasAny(msg, ["faz meu curriculo", "faz meu currículo", "monta pra mim", "voce monta", "você monta", "fazer pra mim", "quero que faca", "quero que faça"])) {
+    return `Entendi 😊
+
+O curso foi pensado para te ensinar a montar e melhorar seu próprio currículo com estratégia.
+
+Isso é importante porque você não fica preso a uma única versão. Você aprende a adaptar o currículo para várias vagas.
+
+Mas se você quer uma orientação mais direta sobre o seu caso, recomendo falar com a especialista Milene:
+
+👉 ${linkMilene()}
+
+Ela pode te orientar melhor sobre o caminho mais adequado.`;
+  }
+
+  // =====================================================
+  // 26. LINKEDIN
+  // =====================================================
+  if (hasAny(msg, ["linkedin", "perfil linkedin", "perfil no linkedin"])) {
+    return `O LinkedIn também é muito importante 😊
+
+Mas o currículo ainda é essencial, principalmente quando você se candidata por plataformas como Gupy, Kenoby, InfoJobs, LinkedIn Jobs e sites de empresas.
+
+O ideal é os dois estarem alinhados:
+
+✔ currículo bem estruturado  
+✔ LinkedIn com informações coerentes  
+✔ palavras-chave da área  
+✔ experiências bem explicadas  
+✔ objetivo profissional claro  
+
+Se quiser orientação sobre currículo e posicionamento, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 27. CANVA / WORD / PDF
+  // =====================================================
+  if (hasAny(msg, ["canva", "word", "pdf", "modelo", "template", "curriculo bonito", "currículo bonito"])) {
+    return `Um currículo bonito ajuda, mas não é o mais importante.
+
+O que mais pesa é se ele está claro, bem estruturado e fácil de ser lido por sistemas e recrutadores.
+
+Às vezes um modelo muito visual no Canva pode até atrapalhar a leitura automática, dependendo de como foi feito.
+
+O curso te mostra como pensar na estrutura antes da aparência.
+
+Se quiser tirar dúvida sobre o melhor formato para seu caso, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 28. CURRÍCULO EM PDF OU WORD
+  // =====================================================
+  if (hasAny(msg, ["pdf ou word", "word ou pdf", "formato", "qual formato", "enviar em pdf", "enviar em word"])) {
+    return `Na maioria dos casos, PDF é uma boa opção porque preserva o formato.
+
+Mas o mais importante é o currículo ser simples de ler, bem organizado e compatível com sistemas automáticos.
+
+Evite excesso de imagens, tabelas confusas, colunas muito complexas ou elementos que dificultem a leitura.
+
+Se quiser orientação específica sobre seu currículo, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 29. PALAVRAS-CHAVE
+  // =====================================================
+  if (hasAny(msg, ["palavra chave", "palavras chave", "keywords", "termos da vaga"])) {
+    return `Palavras-chave são uma parte muito importante do currículo.
+
+Elas ajudam sistemas automáticos a entender se o seu perfil combina com a vaga.
+
+Por exemplo, se a vaga pede “atendimento ao cliente”, “Excel”, “vendas”, “controle de estoque” ou “gestão de equipe”, essas informações precisam aparecer de forma natural se você realmente tem essas competências.
+
+O curso ensina como usar palavras-chave sem parecer forçado e sem inventar experiência.
+
+Se quiser ajuda com isso, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 30. OBJETIVO PROFISSIONAL
+  // =====================================================
+  if (hasAny(msg, ["objetivo profissional", "objetivo no curriculo", "objetivo no currículo", "o que colocar no objetivo"])) {
+    return `O objetivo profissional precisa ser claro e alinhado com a vaga.
+
+Um erro comum é colocar frases muito genéricas, como “busco uma oportunidade para crescer”.
+
+O ideal é mostrar a área ou cargo desejado de forma objetiva, sem exagerar.
+
+Exemplo:  
+“Busco oportunidade na área administrativa, com foco em organização de documentos, atendimento e apoio operacional.”
+
+O curso ajuda a ajustar esse tipo de detalhe.
+
+Se quiser orientação personalizada, chama a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 31. EXPERIÊNCIAS
+  // =====================================================
+  if (hasAny(msg, ["experiencia profissional", "experiência profissional", "como colocar experiencia", "como colocar experiência", "minhas experiencias", "minhas experiências"])) {
+    return `A experiência precisa mostrar mais do que apenas o cargo.
+
+O ideal é explicar o que você fazia, quais responsabilidades tinha e, se possível, algum resultado.
+
+Exemplo simples:
+
+Em vez de só colocar:
+“Auxiliar administrativo”
+
+Você pode melhorar para:
+“Atendimento a clientes, organização de documentos, controle de planilhas e apoio às rotinas administrativas.”
+
+Isso ajuda o recrutador e os sistemas a entenderem melhor seu perfil.
+
+O curso aprofunda exatamente esse tipo de ajuste.`;
+  }
+
+  // =====================================================
+  // 32. HABILIDADES
+  // =====================================================
+  if (hasAny(msg, ["habilidades", "competencias", "competências", "soft skills", "hard skills", "o que colocar em habilidades"])) {
+    return `Na parte de habilidades, o ideal é colocar coisas que realmente tenham relação com a vaga.
+
+Exemplos:
+
+✔ Excel  
+✔ atendimento ao cliente  
+✔ organização  
+✔ comunicação  
+✔ vendas  
+✔ liderança  
+✔ controle de estoque  
+✔ pacote Office  
+✔ resolução de problemas  
+
+O erro é colocar habilidades muito genéricas sem conexão com a oportunidade.
+
+O curso te ajuda a escolher e posicionar melhor essas informações.`;
+  }
+
+  // =====================================================
+  // 33. RECOLOCAÇÃO PROFISSIONAL
+  // =====================================================
+  if (hasAny(msg, ["recolocacao", "recolocação", "desempregado", "desempregada", "procurando emprego", "buscando emprego"])) {
+    return `Entendo.
+
+Para recolocação, o currículo precisa ser objetivo e estratégico.
+
+O foco é mostrar rapidamente:
+
+✔ o que você sabe fazer  
+✔ onde já atuou  
+✔ quais habilidades tem  
+✔ que tipo de vaga busca  
+✔ por que seu perfil combina com aquela oportunidade  
+
+Se o currículo estiver muito genérico, pode acabar passando despercebido.
+
+Se quiser falar sobre sua situação com mais calma, chama a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 34. MUITA EXPERIÊNCIA / CURRÍCULO LONGO
+  // =====================================================
+  if (hasAny(msg, ["muita experiencia", "muita experiência", "curriculo longo", "currículo longo", "muitas empresas", "muitos empregos"])) {
+    return `Quando a pessoa tem muita experiência, o desafio é organizar sem deixar o currículo pesado.
+
+Nem tudo precisa entrar com o mesmo nível de detalhe.
+
+O ideal é destacar o que mais conversa com a vaga atual e resumir experiências menos relevantes.
+
+Um currículo muito longo pode cansar o recrutador e também dificultar a leitura.
+
+O curso te ajuda a escolher o que valorizar e o que simplificar.`;
+  }
+
+  // =====================================================
+  // 35. POUCA EXPERIÊNCIA
+  // =====================================================
+  if (hasAny(msg, ["pouca experiencia", "pouca experiência", "tenho pouca experiencia", "tenho pouca experiência"])) {
+    return `Com pouca experiência, o currículo precisa valorizar melhor o que você já tem.
+
+Você pode destacar:
+
+✔ cursos  
+✔ habilidades  
+✔ atividades acadêmicas  
+✔ projetos  
+✔ experiências informais  
+✔ atendimento, vendas, organização ou rotinas que já fez  
+✔ vontade de aprender e área de interesse  
+
+O segredo é não deixar o currículo vazio nem exagerar.
+
+Se quiser ajuda para organizar seu caso, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 36. CURRÍCULO PARA VAGA ESPECÍFICA
+  // =====================================================
+  if (hasAny(msg, ["vaga especifica", "vaga específica", "adaptar curriculo", "adaptar currículo", "curriculo para vaga", "currículo para vaga"])) {
+    return `Esse é um ponto muito importante.
+
+O ideal é adaptar o currículo para cada tipo de vaga.
+
+Não significa inventar informação. Significa destacar o que você já tem e que mais combina com aquela oportunidade.
+
+Você pode ajustar:
+
+✔ objetivo profissional  
+✔ palavras-chave  
+✔ ordem das experiências  
+✔ habilidades em destaque  
+✔ cursos mais relevantes  
+
+O curso ensina exatamente essa lógica.`;
+  }
+
+  // =====================================================
+  // 37. ÁREA ADMINISTRATIVA
+  // =====================================================
+  if (hasAny(msg, ["administrativo", "administrativa", "auxiliar administrativo", "assistente administrativo"])) {
+    return `Para área administrativa, o currículo precisa destacar organização, atenção a detalhes e domínio de rotinas.
+
+Pode valorizar:
+
+✔ atendimento  
+✔ planilhas  
+✔ controle de documentos  
+✔ emissão de relatórios  
+✔ organização de arquivos  
+✔ apoio a equipes  
+✔ pacote Office  
+✔ comunicação  
+
+O curso ajuda a transformar essas experiências em descrições mais fortes e claras.`;
+  }
+
+  // =====================================================
+  // 38. ÁREA DE VENDAS
+  // =====================================================
+  if (hasAny(msg, ["vendas", "vendedor", "vendedora", "comercial", "atendimento comercial"])) {
+    return `Para vendas, o currículo precisa mostrar comunicação, atendimento e resultado.
+
+Você pode destacar:
+
+✔ atendimento ao cliente  
+✔ negociação  
+✔ prospecção  
+✔ fechamento de vendas  
+✔ metas  
+✔ relacionamento com clientes  
+✔ pós-venda  
+✔ organização de carteira  
+
+Mesmo que você não tenha números exatos, dá para descrever melhor suas responsabilidades.
+
+O curso te ajuda a fazer isso com estratégia.`;
+  }
+
+  // =====================================================
+  // 39. ATENDIMENTO AO CLIENTE
+  // =====================================================
+  if (hasAny(msg, ["atendimento", "cliente", "sac", "call center", "recepcao", "recepção"])) {
+    return `Para atendimento ao cliente, é importante mostrar clareza, comunicação e resolução de problemas.
+
+O currículo pode destacar:
+
+✔ atendimento presencial ou online  
+✔ suporte ao cliente  
+✔ registro de solicitações  
+✔ organização de informações  
+✔ solução de dúvidas  
+✔ trabalho em equipe  
+✔ cordialidade e comunicação  
+
+Muita gente coloca só “atendimento”, mas dá para deixar isso muito mais profissional.`;
+  }
+
+  // =====================================================
+  // 40. TECNOLOGIA / TI
+  // =====================================================
+  if (hasAny(msg, ["ti", "tecnologia", "programacao", "programação", "desenvolvedor", "dev", "suporte tecnico", "suporte técnico"])) {
+    return `Para área de tecnologia, o currículo precisa ser bem direto e mostrar ferramentas, projetos e habilidades técnicas.
+
+É importante destacar:
+
+✔ linguagens  
+✔ ferramentas  
+✔ projetos  
+✔ GitHub ou portfólio, se tiver  
+✔ experiências práticas  
+✔ cursos  
+✔ tecnologias usadas  
+
+Também é importante adaptar o currículo para cada vaga, porque TI tem muitas áreas diferentes.
+
+Se quiser orientação sobre currículo para tecnologia, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 41. CURRÍCULO INTERNACIONAL / INGLÊS
+  // =====================================================
+  if (hasAny(msg, ["ingles", "inglês", "curriculo em ingles", "currículo em inglês", "vaga internacional", "exterior"])) {
+    return `Currículo em inglês ou para vaga internacional precisa de cuidado.
+
+Não é só traduzir palavra por palavra. É importante adaptar termos, formato e descrição das experiências.
+
+Também é bom deixar claro:
+
+✔ nível de inglês  
+✔ experiências relevantes  
+✔ ferramentas  
+✔ resultados  
+✔ formação  
+✔ tipo de vaga buscada  
+
+Se quiser orientação específica, fala com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 42. IDADE / MAIS VELHO / RECOMEÇO
+  // =====================================================
+  if (hasAny(msg, ["tenho idade", "mais velho", "mais velha", "idade", "recomecar", "recomeçar", "voltar ao mercado"])) {
+    return `Dá para montar um currículo estratégico em qualquer fase.
+
+Quando a pessoa tem mais vivência, o segredo é destacar experiência, responsabilidade, maturidade e resultados, sem deixar o currículo pesado.
+
+Também é importante adaptar a linguagem para o tipo de vaga que você quer agora.
+
+Se quiser conversar melhor sobre seu caso, chama a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 43. PCD
+  // =====================================================
+  if (hasAny(msg, ["pcd", "deficiencia", "deficiência", "vaga pcd"])) {
+    return `Para vagas PCD, também é importante ter um currículo bem estruturado.
+
+O ideal é apresentar suas experiências, habilidades e formação com clareza, como em qualquer currículo, e mencionar informações relevantes apenas quando fizer sentido para a vaga ou processo.
+
+Se quiser orientação com mais cuidado sobre seu caso, recomendo falar com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 44. NÃO SEI POR ONDE COMEÇAR
+  // =====================================================
+  if (hasAny(msg, ["nao sei por onde comecar", "não sei por onde começar", "estou perdido", "estou perdida", "to perdido", "tô perdido", "nao sei fazer curriculo", "não sei fazer currículo"])) {
+    return `Tudo bem, isso é mais comum do que parece 😊
+
+O primeiro passo é organizar as informações principais:
+
+✔ dados de contato  
+✔ objetivo profissional  
+✔ experiências  
+✔ formação  
+✔ cursos  
+✔ habilidades  
+✔ informações que combinam com a vaga  
+
+Depois disso, vem a parte estratégica: como escrever de um jeito que o recrutador e os sistemas entendam melhor.
+
+O curso te guia nesse processo.
+
+Se quiser ajuda mais direta para começar, chama a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 45. CURRÍCULO GENÉRICO
+  // =====================================================
+  if (hasAny(msg, ["curriculo generico", "currículo genérico", "muito generico", "muito genérico", "igual para todas as vagas"])) {
+    return `Esse é um dos principais problemas.
+
+Quando o currículo é muito genérico, ele não conversa diretamente com a vaga.
+
+O ideal é adaptar algumas partes, como:
+
+✔ objetivo  
+✔ resumo profissional  
+✔ habilidades  
+✔ palavras-chave  
+✔ experiências mais relevantes  
+
+Assim o recrutador entende mais rápido por que você combina com aquela oportunidade.
+
+O curso ensina como fazer isso sem precisar criar um currículo totalmente novo toda vez.`;
+  }
+
+  // =====================================================
+  // 46. RESUMO PROFISSIONAL
+  // =====================================================
+  if (hasAny(msg, ["resumo profissional", "perfil profissional", "sobre mim no curriculo", "sobre mim no currículo"])) {
+    return `O resumo profissional é uma das partes mais importantes do currículo.
+
+Ele precisa mostrar rapidamente quem você é profissionalmente.
+
+Um bom resumo pode trazer:
+
+✔ área de atuação  
+✔ tempo ou tipo de experiência  
+✔ principais habilidades  
+✔ foco profissional  
+✔ pontos fortes ligados à vaga  
+
+Evite frases muito vagas como “sou esforçado e comunicativo” sem contexto.
+
+O curso ajuda a montar um resumo mais estratégico.`;
+  }
+
+  // =====================================================
+  // 47. FOTO NO CURRÍCULO
+  // =====================================================
+  if (hasAny(msg, ["foto no curriculo", "foto no currículo", "colocar foto", "precisa de foto"])) {
+    return `Na maioria dos casos, não precisa colocar foto no currículo, a menos que a vaga peça.
+
+O mais importante é o conteúdo estar claro, profissional e bem organizado.
+
+Foto pode ocupar espaço e nem sempre ajuda na análise.
+
+É melhor usar esse espaço para mostrar habilidades, experiências e informações relevantes para a vaga.`;
+  }
+
+  // =====================================================
+  // 48. ENDEREÇO / DADOS PESSOAIS
+  // =====================================================
+  if (hasAny(msg, ["endereco", "endereço", "dados pessoais", "cpf", "rg", "estado civil"])) {
+    return `Cuidado com excesso de dados pessoais no currículo.
+
+Geralmente não precisa colocar CPF, RG, nome dos pais ou informações muito pessoais.
+
+O básico costuma ser:
+
+✔ nome  
+✔ telefone  
+✔ e-mail  
+✔ cidade/estado  
+✔ LinkedIn, se tiver  
+
+O currículo precisa ser profissional e objetivo.`;
+  }
+
+  // =====================================================
+  // 49. CURSOS NO CURRÍCULO
+  // =====================================================
+  if (hasAny(msg, ["cursos no curriculo", "cursos no currículo", "curso complementar", "cursos complementares", "onde colocar curso"])) {
+    return `Cursos podem fortalecer bastante o currículo, principalmente para quem tem pouca experiência ou está mudando de área.
+
+O ideal é colocar cursos que tenham relação com a vaga desejada.
+
+Exemplo:
+
+✔ Excel para área administrativa  
+✔ Atendimento ao cliente para comércio  
+✔ Programação para tecnologia  
+✔ Gestão de pessoas para liderança  
+
+O curso te ajuda a organizar isso sem deixar o currículo poluído.`;
+  }
+
+  // =====================================================
+  // 50. EMAIL PROFISSIONAL
+  // =====================================================
+  if (hasAny(msg, ["email", "e-mail", "email profissional", "e-mail profissional"])) {
+    return `Um detalhe simples, mas importante: use um e-mail profissional.
+
+Evite e-mails com apelidos, brincadeiras ou nomes muito informais.
+
+O ideal é algo com nome e sobrenome, por exemplo:
+
+nome.sobrenome@email.com
+
+Pequenos detalhes também passam profissionalismo.`;
+  }
+
+  // =====================================================
+  // 51. CURRÍCULO COM UMA PÁGINA
+  // =====================================================
+  if (hasAny(msg, ["uma pagina", "uma página", "duas paginas", "duas páginas", "quantas paginas", "quantas páginas"])) {
+    return `Depende da sua experiência.
+
+Para quem está começando, uma página geralmente é suficiente.
+
+Para quem tem mais experiência, pode ter duas páginas, desde que tudo ali seja relevante.
+
+O erro é colocar informação demais só para preencher espaço.
+
+O currículo precisa ser claro, objetivo e estratégico.`;
+  }
+
+  // =====================================================
+  // 52. ENTREVISTA
+  // =====================================================
+  if (hasAny(msg, ["entrevista", "chamado para entrevista", "chamada para entrevista", "me chamaram"])) {
+    return `Que bom 😊
+
+Se você foi chamado para entrevista, o currículo já cumpriu uma parte importante.
+
+Agora é essencial você saber explicar suas experiências com clareza.
+
+Revise:
+
+✔ o que colocou no currículo  
+✔ suas principais experiências  
+✔ resultados que já teve  
+✔ por que quer a vaga  
+✔ como suas habilidades combinam com a oportunidade  
+
+Um currículo bem feito também ajuda você a se preparar melhor para a entrevista.`;
+  }
+
+  // =====================================================
+  // 53. MEDO / INSEGURANÇA
+  // =====================================================
+  if (hasAny(msg, ["tenho medo", "inseguro", "insegura", "vergonha", "nao sei se consigo", "não sei se consigo"])) {
+    return `Eu entendo 😊
+
+Muita gente se sente insegura na hora de montar currículo ou se candidatar.
+
+Mas currículo não é sobre parecer perfeito. É sobre apresentar da melhor forma o que você já tem.
+
+Com estrutura certa, até experiências simples podem ficar mais profissionais.
+
+Se quiser conversar com alguém para entender melhor seu caso, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 54. DESEMPENHO NO GUPY
+  // =====================================================
+  if (hasAny(msg, ["gupy nao chama", "gupy não chama", "gupy reprova", "gupy me reprova", "gupy nunca chama"])) {
+    return `A Gupy e outras plataformas usam critérios e filtros que podem dificultar quando o currículo não está bem alinhado.
+
+Alguns pontos que ajudam:
+
+✔ usar palavras-chave da vaga  
+✔ preencher o perfil com atenção  
+✔ adaptar o currículo  
+✔ evitar informações genéricas  
+✔ manter experiências claras  
+✔ revisar erros de português  
+
+O curso te ajuda a entender essa lógica para não depender só da sorte.`;
+  }
+
+  // =====================================================
+  // 55. ERROS DE PORTUGUÊS
+  // =====================================================
+  if (hasAny(msg, ["erro de portugues", "erro de português", "portugues", "português", "revisao", "revisão"])) {
+    return `Erros de português podem prejudicar bastante a primeira impressão.
+
+Antes de enviar, é bom revisar:
+
+✔ acentuação  
+✔ concordância  
+✔ datas  
+✔ nomes de cargos  
+✔ excesso de abreviações  
+✔ frases muito longas  
+
+Um currículo limpo e bem escrito passa mais profissionalismo.
+
+O curso também ajuda com organização e clareza na escrita.`;
+  }
+
+  // =====================================================
+  // 56. NÃO TENHO CURSO
+  // =====================================================
+  if (hasAny(msg, ["nao tenho curso", "não tenho curso", "sem curso", "nunca fiz curso"])) {
+    return `Mesmo sem muitos cursos, ainda dá para montar um currículo melhor.
+
+Você pode destacar experiência prática, habilidades, atividades informais, projetos e disponibilidade para aprender.
+
+Mas fazer cursos complementares pode ajudar bastante, principalmente se forem ligados à vaga desejada.
+
+O importante é não deixar o currículo vazio ou genérico.`;
+  }
+
+  // =====================================================
+  // 57. SÓ ENSINO MÉDIO
+  // =====================================================
+  if (hasAny(msg, ["ensino medio", "ensino médio", "só tenho ensino medio", "só tenho ensino médio", "terminei a escola"])) {
+    return `Ter ensino médio não impede você de montar um bom currículo.
+
+Você pode valorizar:
+
+✔ formação  
+✔ cursos livres  
+✔ habilidades  
+✔ experiências informais  
+✔ atendimento  
+✔ organização  
+✔ disponibilidade  
+✔ vontade de aprender  
+
+O currículo precisa mostrar seu potencial de forma clara.
+
+Se quiser ajuda com isso, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 58. FACULDADE INCOMPLETA
+  // =====================================================
+  if (hasAny(msg, ["faculdade incompleta", "tranquei faculdade", "parei faculdade", "curso superior incompleto"])) {
+    return `Faculdade incompleta pode entrar no currículo dependendo do caso.
+
+Se tiver relação com a vaga ou mostrar uma formação relevante, pode ser útil mencionar.
+
+O importante é apresentar de forma honesta e organizada, sem parecer informação solta.
+
+Se quiser orientação para decidir como colocar, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 59. MUITOS CURSOS
+  // =====================================================
+  if (hasAny(msg, ["muitos cursos", "tenho varios cursos", "tenho vários cursos", "qual curso colocar"])) {
+    return `Quando você tem muitos cursos, o ideal é selecionar os mais relevantes.
+
+Não precisa colocar tudo.
+
+Priorize os cursos que têm relação com:
+
+✔ a vaga desejada  
+✔ sua área atual  
+✔ sua transição de carreira  
+✔ habilidades pedidas na descrição da vaga  
+
+Currículo bom não é o que tem mais informação. É o que tem informação mais estratégica.`;
+  }
+
+  // =====================================================
+  // 60. TRABALHO INFORMAL
+  // =====================================================
+  if (hasAny(msg, ["trabalho informal", "bico", "freelancer", "freela", "sem registro", "trabalhei sem carteira"])) {
+    return `Experiência informal também pode ser valorizada, dependendo de como você apresenta.
+
+Você pode colocar atividades como:
+
+✔ atendimento  
+✔ vendas  
+✔ organização  
+✔ entregas  
+✔ cuidado com clientes  
+✔ controle de pagamentos  
+✔ produção de conteúdo  
+✔ serviços autônomos  
+
+O importante é escrever de forma profissional e verdadeira.
+
+O curso ajuda bastante nesse tipo de organização.`;
+  }
+
+  // =====================================================
+  // 61. DONA DE CASA / PAUSA NA CARREIRA
+  // =====================================================
+  if (hasAny(msg, ["dona de casa", "pausei carreira", "fiquei parada", "fiquei parado", "voltar a trabalhar", "voltar pro mercado"])) {
+    return `Dá para voltar ao mercado com um currículo bem organizado.
+
+Se houve uma pausa, o ideal é valorizar suas experiências anteriores, habilidades atuais, cursos e o tipo de vaga que você busca agora.
+
+Também dá para destacar competências como organização, responsabilidade, rotina, atendimento, gestão de tarefas e adaptação, quando fizer sentido.
+
+Se quiser orientação com mais cuidado, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 62. PORTFÓLIO
+  // =====================================================
+  if (hasAny(msg, ["portfolio", "portfólio", "github", "behance", "projetos"])) {
+    return `Portfólio pode fortalecer muito o currículo, principalmente em áreas como tecnologia, design, marketing, redação, social media e áreas criativas.
+
+Se você tem projetos, vale organizar e colocar um link profissional.
+
+Mas o currículo ainda precisa explicar bem:
+
+✔ o que você fez  
+✔ quais ferramentas usou  
+✔ qual foi seu papel  
+✔ quais resultados ou aprendizados teve  
+
+Currículo e portfólio precisam se complementar.`;
+  }
+
+  // =====================================================
+  // 63. REDES SOCIAIS
+  // =====================================================
+  if (hasAny(msg, ["instagram", "redes sociais", "colocar instagram", "colocar rede social"])) {
+    return `Só coloque redes sociais no currículo se elas forem profissionais ou relevantes para a vaga.
+
+Por exemplo:
+
+✔ LinkedIn  
+✔ portfólio  
+✔ GitHub  
+✔ Behance  
+✔ Instagram profissional, se for área criativa ou comercial  
+
+Evite colocar redes pessoais que não ajudam na sua imagem profissional.`;
+  }
+
+  // =====================================================
+  // 64. ÁREA DA SAÚDE
+  // =====================================================
+  if (hasAny(msg, ["saude", "saúde", "enfermagem", "cuidador", "cuidadora", "tecnico de enfermagem", "técnico de enfermagem"])) {
+    return `Para área da saúde, o currículo precisa transmitir responsabilidade, cuidado e preparo técnico.
+
+Pode destacar:
+
+✔ formação  
+✔ cursos obrigatórios  
+✔ experiência com pacientes  
+✔ atendimento humanizado  
+✔ rotinas clínicas  
+✔ organização  
+✔ plantões  
+✔ normas e procedimentos  
+
+Se quiser orientação mais específica, fale com a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 65. LOGÍSTICA / ESTOQUE
+  // =====================================================
+  if (hasAny(msg, ["logistica", "logística", "estoque", "almoxarifado", "expedicao", "expedição", "conferente"])) {
+    return `Para logística e estoque, o currículo pode destacar:
+
+✔ controle de estoque  
+✔ separação de pedidos  
+✔ conferência  
+✔ organização de mercadorias  
+✔ entrada e saída de produtos  
+✔ inventário  
+✔ sistemas usados  
+✔ agilidade e atenção a detalhes  
+
+O curso ajuda a transformar essas atividades em descrições mais profissionais.`;
+  }
+
+  // =====================================================
+  // 66. LIMPEZA / SERVIÇOS GERAIS
+  // =====================================================
+  if (hasAny(msg, ["limpeza", "servicos gerais", "serviços gerais", "auxiliar de limpeza", "diarista"])) {
+    return `Para limpeza e serviços gerais, também dá para montar um currículo profissional.
+
+Você pode destacar:
+
+✔ organização  
+✔ conservação de ambientes  
+✔ atenção a detalhes  
+✔ cumprimento de rotinas  
+✔ responsabilidade  
+✔ trabalho em equipe  
+✔ pontualidade  
+✔ experiência em empresas, casas, condomínios ou comércios  
+
+Toda experiência pode ser valorizada quando é bem escrita.`;
+  }
+
+  // =====================================================
+  // 67. PRODUÇÃO / INDÚSTRIA
+  // =====================================================
+  if (hasAny(msg, ["producao", "produção", "industria", "indústria", "operador de producao", "operador de produção", "fabrica", "fábrica"])) {
+    return `Para produção e indústria, o currículo precisa mostrar rotina, responsabilidade e conhecimento operacional.
+
+Pode destacar:
+
+✔ linha de produção  
+✔ operação de máquinas  
+✔ controle de qualidade  
+✔ embalagem  
+✔ separação  
+✔ organização  
+✔ metas de produção  
+✔ segurança no trabalho  
+
+Se você já atuou na área, dá para deixar essa experiência mais forte no currículo.`;
+  }
+
+  // =====================================================
+  // 68. MOTORISTA / ENTREGADOR
+  // =====================================================
+  if (hasAny(msg, ["motorista", "entregador", "entregas", "cnh", "habilitacao", "habilitação"])) {
+    return `Para motorista ou entregador, o currículo pode destacar:
+
+✔ categoria da CNH  
+✔ experiência com rotas  
+✔ entregas  
+✔ atendimento ao cliente  
+✔ pontualidade  
+✔ conservação do veículo  
+✔ conhecimento de regiões  
+✔ aplicativos ou sistemas usados  
+
+Essas informações ajudam o recrutador a entender melhor sua experiência.`;
+  }
+
+  // =====================================================
+  // 69. ENTENDI / OK / CERTO
+  // =====================================================
+  if (hasAny(msg, ["entendi", "ok", "certo", "ta bom", "tá bom", "beleza", "blz"])) {
+    return `Perfeito 😊
+
+Se quiser, posso te ajudar a entender o próximo passo.
+
+Você está mais interessado em:
+1️⃣ melhorar um currículo que já tem  
+2️⃣ montar um currículo do zero  
+3️⃣ entender como passar pela IA/Gupy  
+4️⃣ acessar o curso  
+
+Se preferir falar direto com a especialista, chama a Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 70. SIM / QUERO / TENHO INTERESSE
+  // =====================================================
+  if (hasAny(msg, ["sim", "quero", "tenho interesse", "pode mandar", "manda", "me envie", "envia", "quero sim"])) {
+    return `Perfeito 😊
+
+Vou te passar o caminho:
+
+1️⃣ Acesse a página do curso  
+2️⃣ Faça seu cadastro  
+3️⃣ Entre com seu login, se já tiver conta  
+4️⃣ Siga para o pagamento  
+5️⃣ Depois acesse a área do aluno  
+
+Link:
+
+${linkCurso}
+
+Se tiver dúvida sobre o curso ou se ele serve para você, fale com a Milene:
+
+👉 ${linkMilene()}
+
+Se der erro técnico, fale com Gustavo:
+
+👉 ${linkGustavo()}`;
+  }
+
+  // =====================================================
+  // 71. NÃO / NÃO QUERO
+  // =====================================================
+  if (hasAny(msg, ["nao quero", "não quero", "nao tenho interesse", "não tenho interesse"])) {
+    return `Tudo bem 😊
+
+Sem problema nenhum.
+
+Se sua dúvida for só sobre currículo, vaga ou como melhorar suas chances, posso tentar te orientar por aqui mesmo.
+
+E se em outro momento quiser conversar com a especialista, é só chamar:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 72. HUMANO / ATENDENTE / SUPORTE
+  // =====================================================
+  if (hasAny(msg, ["humano", "atendente", "falar com alguem", "falar com alguém", "pessoa", "suporte", "ajuda humana"])) {
     return `Claro 😊
 
-Se preferir falar direto comigo, chama nesse WhatsApp:
+Vou te direcionar certinho:
 
-https://wa.me/55${contatoHumano}`;
+👩‍💼 Para dúvidas sobre currículo, curso, vagas ou orientação:
+👉 Milene: ${linkMilene()}
+
+👨‍💻 Para erro, login, acesso, pagamento travado, página com problema ou bug:
+👉 Gustavo: ${linkGustavo()}
+
+Assim você fala com a pessoa certa e resolve mais rápido.`;
   }
 
-  // RESPOSTA PADRÃO
- return null;
-}
+  // =====================================================
+  // 73. OBRIGADO
+  // =====================================================
+  if (hasAny(msg, ["obrigado", "obrigada", "valeu", "vlw", "agradeco", "agradeço"])) {
+    return `Imagina 😊
+
+Fico feliz em ajudar.
+
+Se surgir qualquer dúvida sobre currículo, vaga, curso ou acesso, pode chamar.
+
+E se quiser falar direto com a especialista:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 74. CLIENTE CONFUSO / MENSAGEM CURTA
+  // =====================================================
+  if (rawMsg.trim().length <= 3) {
+    return `${saudacao}me fala um pouquinho melhor o que você precisa 😊
+
+Você quer ajuda com currículo, acesso ao curso ou está com algum problema técnico?
+
+Se for problema técnico, fale com Gustavo:
+
+👉 ${linkGustavo()}
+
+Se for dúvida sobre currículo ou curso, fale com Milene:
+
+👉 ${linkMilene()}`;
+  }
+
+  // =====================================================
+  // 75. RESPOSTA PADRÃO INTELIGENTE
+  // =====================================================
+  return `${saudacao}entendi 😊
+
+Para eu te ajudar melhor, me conta um pouco mais sobre sua dúvida.
+
+Se for sobre currículo, vaga, IA, Gupy, LinkedIn ou se o curso serve para o seu caso, o melhor contato é com a especialista Milene:
+
+👉 ${linkMilene()}
+
+Se for erro, problema de acesso, login, pagamento travado ou página com falha, fale com o Gustavo desenvolvedor:
+
+👉 ${linkGustavo()}`;
+
+  }
+
 
 async function maybeGetClaudeReply(messageText, user) {
   const claudeKey = cleanEnv(process.env.CLAUDE_API_KEY);
