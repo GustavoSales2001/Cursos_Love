@@ -551,71 +551,294 @@ async function markWhatsappSent(userId) {
   );
 }
 
-function buildCustomerReply(text = "") {
+function hasAny(msg, words = []) {
+  return words.some((word) => msg.includes(word));
+}
+
+function buildCustomerReply(text = "", user = null) {
   const msg = String(text || "").toLowerCase();
 
   const linkCurso = "https://gustavosales2001.github.io/Cursos_Love/";
   const contatoHumano = "11933128628";
+  const nome = user?.name ? user.name.split(" ")[0] : "";
 
-  if (msg.includes("preço") || msg.includes("valor") || msg.includes("quanto") || msg.includes("custa")) {
-    return `O curso está com condição especial de desconto por esse link 👇
+  const saudacao = nome ? `${nome}, ` : "";
 
-${linkCurso}
+  // 1. PAGAMENTO / PIX / CARTÃO
+  if (hasAny(msg, ["pagamento", "pagar", "pix", "cartão", "cartao", "boleto", "mercado pago"])) {
+    return `${saudacao}o pagamento é feito pela página do curso 😊
 
-É só fazer o cadastro. Se você já tiver cadastro, entre com seu login que o pagamento aparece com desconto.`;
-  }
-
-  if (msg.includes("link") || msg.includes("comprar") || msg.includes("pagar") || msg.includes("desconto")) {
-    return `Perfeito 😊 segue o link com desconto:
+Você acessa por aqui:
 
 ${linkCurso}
 
-Faça seu cadastro. Se já tiver conta, entre com ela e finalize o pagamento com desconto.`;
+Depois é só fazer o cadastro ou entrar com seu login e seguir para a tela de pagamento.
+
+Se aparecer algum erro, me manda o print que eu te ajudo a resolver.`;
   }
 
-  if (msg.includes("como funciona") || msg.includes("funciona") || msg.includes("curso") || msg.includes("explica")) {
-    return `Funciona de forma bem prática 😊
+  // 2. PREÇO / VALOR
+  if (hasAny(msg, ["preço", "valor", "quanto", "custa", "custo"])) {
+    return `O curso está com condição especial pelo link com desconto 👇
 
-O curso te ajuda a montar um currículo mais estratégico, com estrutura clara, palavras-chave certas e mais preparado para passar pelos filtros automáticos das empresas.
+${linkCurso}
 
-Quer que eu te mande o link com desconto?`;
+A ideia é ser um acesso acessível pra quem quer melhorar o currículo e aumentar as chances em processos seletivos.`;
   }
 
-  if (msg.includes("gupy") || msg.includes("linkedin") || msg.includes("ats") || msg.includes("ia") || msg.includes("filtro")) {
-    return `Boa pergunta 👀
-
-Hoje muitas empresas usam filtros automáticos antes do currículo chegar em uma pessoa. O curso mostra como organizar o currículo com palavras-chave, clareza e estratégia para aumentar suas chances.
-
-Quer acessar com desconto?`;
-  }
-
-  if (msg.includes("não tenho dinheiro") || msg.includes("caro") || msg.includes("depois") || msg.includes("sem dinheiro")) {
-    return `Te entendo totalmente.
-
-Mas a ideia do curso é justamente te ajudar a se posicionar melhor para conquistar oportunidades melhores. Posso te mandar o link com desconto pra você ver com calma?`;
-  }
-
-  if (msg.includes("sim") || msg.includes("quero") || msg.includes("manda") || msg.includes("pode mandar") || msg.includes("tenho interesse")) {
-    return `Perfeito 🔥
+  // 3. LINK / COMPRAR / DESCONTO
+  if (hasAny(msg, ["link", "comprar", "desconto", "promoção", "promocao", "cupom"])) {
+    return `Perfeito 😊
 
 Aqui está o link com desconto:
 
 ${linkCurso}
 
-Faça o cadastro. Se já tiver cadastro, entre com ele e finalize o pagamento com desconto.`;
+Faça seu cadastro. Se já tiver conta, entre com seu login e finalize o pagamento por lá.`;
   }
 
-  if (msg.includes("cadastro") || msg.includes("login") || msg.includes("entrar")) {
+  // 4. QUER SABER MAIS SOBRE O CURSO
+  if (hasAny(msg, ["saber mais", "mais informações", "mais informacoes", "me explica", "explica", "como funciona", "funciona"])) {
+    return `Claro 😊
+
+O curso “Currículo que Vence a IA” ensina você a montar um currículo mais estratégico para passar melhor pelos filtros automáticos das empresas.
+
+Você aprende:
+
+✔ Como a IA/ATS lê seu currículo  
+✔ Como organizar as informações do jeito certo  
+✔ Como usar palavras-chave sem parecer artificial  
+✔ Como adaptar o currículo para cada vaga  
+✔ Como evitar erros que fazem o currículo ser ignorado  
+
+Quer que eu te mande o link com desconto?`;
+  }
+
+  // 5. ATS / IA / GUPY / LINKEDIN
+  if (hasAny(msg, ["ia", "ats", "gupy", "linkedin", "filtro", "robô", "robo", "automático", "automatico"])) {
+    return `Boa pergunta 👀
+
+Hoje muitas empresas usam sistemas automáticos para filtrar currículos antes do recrutador ver.
+
+Esses sistemas procuram:
+
+✔ palavras-chave da vaga  
+✔ cargos e experiências compatíveis  
+✔ organização clara  
+✔ informações fáceis de identificar  
+
+O curso te mostra como estruturar o currículo para não perder força nessa primeira triagem.
+
+Quer acessar com desconto?`;
+  }
+
+  // 6. MÓDULOS / AULAS / CONTEÚDO
+  if (hasAny(msg, ["módulo", "modulo", "módulos", "modulos", "aula", "aulas", "conteúdo", "conteudo", "material", "materiais"])) {
+    return `O curso é dividido em módulos bem práticos:
+
+1️⃣ Como a IA lê seu currículo  
+2️⃣ Estrutura que chama atenção  
+3️⃣ Palavras-chave certas  
+4️⃣ Currículo final estratégico  
+
+Também tem materiais de apoio, como checklist, modelo base e PDFs dos módulos.
+
+Quer que eu te mande o link com desconto?`;
+  }
+
+  // 7. PRIMEIRO EMPREGO / SEM EXPERIÊNCIA
+  if (hasAny(msg, ["primeiro emprego", "sem experiência", "sem experiencia", "nunca trabalhei", "não tenho experiência", "nao tenho experiencia"])) {
+    return `Serve sim 😊
+
+Mesmo sem experiência formal, você pode montar um currículo mais forte destacando:
+
+✔ formação  
+✔ cursos  
+✔ habilidades  
+✔ projetos  
+✔ experiências informais  
+✔ objetivo profissional  
+
+O curso te ajuda a organizar tudo isso de forma mais estratégica.
+
+Quer acessar com desconto?`;
+  }
+
+  // 8. ESTÁGIO / JOVEM APRENDIZ
+  if (hasAny(msg, ["estágio", "estagio", "jovem aprendiz", "aprendiz", "faculdade"])) {
+    return `Serve muito para estágio e jovem aprendiz 😊
+
+Nesses casos, o currículo precisa mostrar potencial, organização e clareza, mesmo sem muita experiência.
+
+O curso ajuda você a montar uma estrutura mais profissional e alinhada com as vagas.
+
+Quer o link com desconto?`;
+  }
+
+  // 9. JÁ TENHO CURRÍCULO
+  if (hasAny(msg, ["já tenho currículo", "ja tenho curriculo", "currículo pronto", "curriculo pronto", "meu currículo", "meu curriculo"])) {
+    return `Melhor ainda 😊
+
+Se você já tem currículo, o curso te ajuda a revisar e melhorar o que já existe.
+
+Você vai conseguir identificar:
+
+✔ erros de estrutura  
+✔ falta de palavras-chave  
+✔ informações genéricas  
+✔ pontos que podem ser valorizados melhor  
+✔ ajustes para passar melhor pelos filtros  
+
+Quer acessar com desconto?`;
+  }
+
+  // 10. NÃO CONSIGO VAGA / NÃO CHAMAM
+  if (hasAny(msg, ["não consigo emprego", "nao consigo emprego", "não chamam", "nao chamam", "não tenho retorno", "nao tenho retorno", "mando currículo", "mando curriculo"])) {
+    return `Entendo totalmente.
+
+Muitas vezes o problema não é falta de capacidade, mas a forma como o currículo está sendo apresentado.
+
+Se ele estiver confuso, genérico ou sem palavras-chave, pode ser ignorado antes mesmo de chegar no recrutador.
+
+O curso foi feito justamente para corrigir isso.
+
+Quer que eu te mande o acesso com desconto?`;
+  }
+
+  // 11. MUDANÇA DE ÁREA
+  if (hasAny(msg, ["mudar de área", "mudar de area", "transição", "transicao", "trocar de área", "trocar de area"])) {
+    return `Serve muito bem para isso 😊
+
+Na transição de área, o currículo precisa mostrar suas habilidades de forma estratégica e conectar sua experiência anterior com a vaga desejada.
+
+O curso te ensina a adaptar o currículo para oportunidades diferentes sem parecer forçado.
+
+Quer acessar com desconto?`;
+  }
+
+  // 12. TEMPO / DURAÇÃO
+  if (hasAny(msg, ["quanto tempo", "duração", "duracao", "demora", "rápido", "rapido"])) {
+    return `O curso foi pensado para ser direto e prático 😊
+
+Você pode assistir no seu ritmo e já aplicar melhorias no currículo desde as primeiras aulas.
+
+A ideia não é enrolar com teoria, é ajudar você a ajustar seu currículo de forma estratégica.
+
+Quer receber o link com desconto?`;
+  }
+
+  // 13. CELULAR / COMPUTADOR
+  if (hasAny(msg, ["celular", "computador", "notebook", "pc"])) {
+    return `Você pode acessar pelo celular ou computador 😊
+
+Para assistir às aulas, o celular já resolve.
+
+Mas para editar o currículo com mais facilidade, o computador ou notebook costuma ser melhor.
+
+Quer o link de acesso com desconto?`;
+  }
+
+  // 14. CERTIFICADO
+  if (hasAny(msg, ["certificado", "certificação", "certificacao"])) {
+    return `Boa pergunta 😊
+
+O foco principal do curso é te ajudar a melhorar seu currículo na prática.
+
+Sobre certificado, recomendo verificar na própria página do curso ou falar direto comigo por aqui:
+
+https://wa.me/55${contatoHumano}`;
+  }
+
+  // 15. GARANTIA / CONFIANÇA / GOLPE
+  if (hasAny(msg, ["é confiável", "e confiavel", "confiável", "confiavel", "golpe", "seguro", "segurança", "seguranca"])) {
+    return `Entendo sua dúvida 😊
+
+O acesso é feito pela página oficial do curso, com cadastro e área do aluno.
+
+Lá dentro você encontra os módulos, aulas e materiais de apoio.
+
+Pode acessar por aqui:
+
+${linkCurso}
+
+Se tiver qualquer dificuldade, me manda print que eu te ajudo.`;
+  }
+
+  // 16. OBJEÇÃO: CARO / SEM DINHEIRO
+  if (hasAny(msg, ["caro", "sem dinheiro", "não tenho dinheiro", "nao tenho dinheiro", "depois eu pago", "tô sem", "to sem"])) {
+    return `Eu te entendo.
+
+Mas pensa comigo: se o currículo estiver fraco ou mal estruturado, você pode continuar perdendo oportunidades sem saber o motivo.
+
+O curso é justamente para te ajudar a corrigir isso e se posicionar melhor nas vagas.
+
+Posso te mandar o link com desconto para você analisar com calma?`;
+  }
+
+  // 17. VOU PENSAR / DEPOIS
+  if (hasAny(msg, ["vou pensar", "depois", "mais tarde", "outro dia", "qualquer coisa", "ver depois"])) {
+    return `Claro, sem problema 😊
+
+Só não deixa parado por muito tempo, porque cada vaga enviada com um currículo mal ajustado pode ser uma oportunidade perdida.
+
+Vou deixar o link aqui caso queira ver com calma:
+
+${linkCurso}`;
+  }
+
+  // 18. FUNCIONA MESMO / VALE A PENA
+  if (hasAny(msg, ["funciona mesmo", "vale a pena", "dá certo", "da certo", "resultado", "garante emprego", "garantia de emprego"])) {
+    return `Vale principalmente se você manda currículo e quase não recebe retorno.
+
+O curso não promete emprego garantido, mas te ensina a melhorar algo essencial: como seu currículo é lido por sistemas e recrutadores.
+
+Isso pode aumentar suas chances de avançar nos processos.
+
+Quer acessar com desconto?`;
+  }
+
+  // 19. QUER QUE FAÇA O CURRÍCULO
+  if (hasAny(msg, ["faz meu currículo", "faz meu curriculo", "monta pra mim", "você monta", "voce monta", "fazer pra mim"])) {
+    return `Eu posso te orientar 😊
+
+Mas o curso foi feito para você aprender a montar e melhorar seu próprio currículo com estratégia.
+
+Assim você consegue adaptar para várias vagas, não depender de uma única versão.
+
+Quer que eu te mande o acesso com desconto?`;
+  }
+
+  // 20. ACESSO / LOGIN / CADASTRO
+  if (hasAny(msg, ["cadastro", "login", "entrar", "acesso", "senha", "área do aluno", "area do aluno"])) {
     return `É simples 😊
 
 Acesse:
 
 ${linkCurso}
 
-Se ainda não tiver conta, faça o cadastro. Se já tiver, entre com seu login e siga para o pagamento com desconto.`;
+Se ainda não tiver conta, faça o cadastro.
+
+Se já tiver conta, entre com seu login e siga para o pagamento/liberação do acesso.
+
+Se travar em alguma parte, me manda print que eu te ajudo.`;
   }
 
-  if (msg.includes("obrigado") || msg.includes("obrigada") || msg.includes("valeu")) {
+  // 21. CLIENTE DISSE SIM / QUERO
+  if (hasAny(msg, ["sim", "quero", "manda", "pode mandar", "tenho interesse", "me envie", "envia"])) {
+    return `Perfeito 🔥
+
+Aqui está o link com desconto:
+
+${linkCurso}
+
+👉 Faça o cadastro  
+👉 Entre com seu login se já tiver conta  
+👉 Finalize o pagamento  
+👉 Depois o acesso é liberado na área do aluno`;
+  }
+
+  // 22. OBRIGADO
+  if (hasAny(msg, ["obrigado", "obrigada", "valeu", "vlw"])) {
     return `Imagina 😊
 
 Se quiser garantir o acesso com desconto, é só entrar por aqui:
@@ -623,7 +846,8 @@ Se quiser garantir o acesso com desconto, é só entrar por aqui:
 ${linkCurso}`;
   }
 
-  if (msg.includes("humano") || msg.includes("atendente") || msg.includes("falar com alguém")) {
+  // 23. HUMANO
+  if (hasAny(msg, ["humano", "atendente", "falar com alguém", "falar com alguem", "suporte", "ajuda humana"])) {
     return `Claro 😊
 
 Se preferir falar direto comigo, chama nesse WhatsApp:
@@ -631,11 +855,8 @@ Se preferir falar direto comigo, chama nesse WhatsApp:
 https://wa.me/55${contatoHumano}`;
   }
 
-  return `Boa pergunta 😊
-
-Esse curso foi feito para te ajudar a montar um currículo mais forte, estratégico e preparado para os filtros das empresas.
-
-Quer que eu te mande o link com desconto?`;
+  // RESPOSTA PADRÃO
+ return null;
 }
 
 async function maybeGetClaudeReply(messageText, user) {
@@ -1421,19 +1642,18 @@ app.post("/api/webhooks/whatsapp", async (req, res) => {
       );
     }
 
-    let reply = buildCustomerReply(text);
-    //const claudeReply = await maybeGetClaudeReply(text, user);
-    //if (claudeReply) {
-      //reply = claudeReply;
-    //}
+let reply = buildCustomerReply(text, user);
 
-    if (!reply) {
+// fallback inteligente com IA
+if (!reply) {
   const claudeReply = await maybeGetClaudeReply(text, user);
+
   if (claudeReply) {
     reply = claudeReply;
+  } else {
+    reply = "Posso te ajudar com pagamento, acesso ou dúvidas do curso 😊";
   }
 }
-
     const sendResponse = await sendWhatsAppText(from, reply);
 
     await saveWhatsappMessage({
