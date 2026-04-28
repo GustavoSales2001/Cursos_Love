@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área do Aluno - CVIA</title>
+  <link rel="stylesheet" href="area.css">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="brand">
+        <h2>CVIA</h2>
+        <p>Área do aluno</p>
+      </div>
+
+      <nav class="menu">
+        <button class="tab-btn active" data-tab="inicio">Início</button>
+        <button class="tab-btn" data-tab="modulos">Módulos</button>
+        <button class="tab-btn" data-tab="aulas">Aulas</button>
+        <button class="tab-btn" data-tab="materiais">Materiais</button>
+        <button class="tab-btn" data-tab="perfil">Perfil</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logoutBtn" class="logout-btn">Sair</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <h1>Bem-vindo(a) à sua área</h1>
+          <p id="welcomeText">Carregando seus dados...</p>
+        </div>
+      </header>
+
+      <section id="inicio" class="tab-content active">
+        <div class="hero-box">
+          <div class="hero-info">
+            <span class="badge">Curso em andamento</span>
+            <h2>Currículo que Vence a IA</h2>
+            <p>
+              Aprenda a montar um currículo mais estratégico, mais forte e mais preparado
+              para os filtros automáticos usados pelas empresas.
+            </p>
+            <button class="main-btn" onclick="abrirTab('aulas')">Começar agora</button>
+          </div>
+          <div class="progress-card">
+            <h3>Seu progresso</h3>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">20% concluído</p>
+          </div>
+        </div>
+
+        <div class="grid-cards">
+          <div class="info-card">
+            <h3>Objetivo do curso</h3>
+            <p>
+              Mostrar como estruturar um currículo mais competitivo, alinhado com vagas
+              e com maior chance de passar pelos sistemas de triagem.
+            </p>
+          </div>
+
+          <div class="info-card">
+            <h3>Dica rápida</h3>
+            <p>
+              Um bom currículo não é só bonito. Ele precisa ser claro, estratégico
+              e conter informações que façam sentido para a vaga desejada.
+            </p>
+          </div>
+
+          <div class="info-card">
+            <h3>Próximo passo</h3>
+            <p>
+              Vá até a aba de aulas e faça o conteúdo inicial para entender
+              como a IA analisa currículos no processo seletivo.
+            </p>
+          </div>
+        </div>
+
+        <div class="module-summary-wrap" style="margin-top: 24px;">
+          <div class="module-summary-card">
+            <h3>O que você vai aprender</h3>
+            <p>
+              Este curso foi estruturado para te ajudar a entender como os sistemas de triagem funcionam,
+              como adaptar seu currículo para vagas reais, como destacar experiências com mais força
+              e como construir uma candidatura mais estratégica.
+            </p>
+            <ul>
+              <li>Como o ATS filtra currículos antes do recrutador</li>
+              <li>Como melhorar a estrutura do currículo</li>
+              <li>Como usar palavras-chave sem parecer artificial</li>
+              <li>Como transformar tarefas em percepção de valor</li>
+              <li>Como deixar o currículo mais competitivo para vagas reais</li>
+              <li>Como revisar erros que prejudicam sua candidatura</li>
+            </ul>
+          </div>
+
+          <div class="module-status-card">
+            <h3>Como avançar no curso</h3>
+            <p>
+              Os módulos seguem uma ordem lógica. Para liberar o próximo módulo,
+              você precisa clicar em <strong>“Marcar como concluído”</strong> em todas as aulas do módulo atual.
+            </p>
+            <p>
+              Isso garante uma progressão mais organizada e ajuda você a absorver o conteúdo na sequência certa.
+            </p>
+            <p>
+              Ao longo do curso, você também encontrará materiais extras em PDF para aprofundar o conteúdo,
+              revisar os pontos mais importantes e aplicar cada aprendizado no seu próprio currículo.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="modulos" class="tab-content">
+        <h2 class="section-title">Módulos do curso</h2>
+
+        <div class="module-summary-wrap">
+          <div class="module-summary-card">
+            <h3 id="moduleSummaryTitle">Módulo 1 — Como os sistemas analisam currículos</h3>
+            <p id="moduleSummaryDescription">
+              Entenda como ATS, filtros automáticos e leitura por palavras-chave impactam sua candidatura.
+            </p>
+            <ul id="moduleSummaryPoints">
+              <li>Entender o que é ATS.</li>
+              <li>Ver como o sistema lê seu currículo.</li>
+              <li>Compreender por que currículos são rejeitados.</li>
+              <li>Descobrir o que faz um currículo passar.</li>
+              <li>Identificar erros simples que reduzem suas chances.</li>
+              <li>Aprender a apresentar informações de forma mais estratégica.</li>
+            </ul>
+          </div>
+
+          <div class="module-status-card" id="moduleStatusBox">
+            <h3>Status do módulo</h3>
+            <p>Progresso do módulo carregando...</p>
+          </div>
+        </div>
+
+        <div class="modules-grid" id="modulesCardsContainer">
+          <div class="module-card">
+            <span class="module-tag">Módulo 1</span>
+            <h3>Como a IA lê seu currículo</h3>
+            <p>
+              Entenda o funcionamento dos filtros automáticos e como evitar erros básicos.
+              Neste módulo, você vai compreender o que é ATS, como esses sistemas organizam,
+              leem e classificam informações do currículo e por que um documento aparentemente
+              bom pode ser descartado antes mesmo de chegar ao recrutador. Você também vai aprender
+              como tornar suas informações mais claras, objetivas e compatíveis com processos seletivos modernos.
+            </p>
+            <img src="./exemplo_modulo_1_curriculo.png" alt="Exemplo de currículo do módulo 1" class="module-example-image" style="width:100%; max-width:420px; border-radius:14px; margin-top:16px; display:block; object-fit:cover;">
+            <p style="margin-top:12px;">
+              <strong>Exemplo visual:</strong> neste modelo, o foco está em mostrar um currículo limpo,
+              com títulos claros, seções fáceis de identificar e palavras legíveis para sistemas de triagem.
+            </p>
+          </div>
+
+          <div class="module-card">
+            <span class="module-tag">Módulo 2</span>
+            <h3>Estrutura que chama atenção</h3>
+            <p>
+              Aprenda a organizar suas informações de forma limpa, objetiva e profissional.
+              Aqui você vai ver como montar um currículo visualmente equilibrado, fácil de ler
+              e estrategicamente distribuído. Vamos trabalhar ordem das seções, hierarquia das informações,
+              títulos, resumo profissional, experiências, formação e habilidades, para que o documento fique
+              claro tanto para o sistema quanto para o recrutador humano.
+            </p>
+            <img src="./exemplo_modulo_2_curriculo.png" alt="Exemplo de currículo do módulo 2" class="module-example-image" style="width:100%; max-width:420px; border-radius:14px; margin-top:16px; display:block; object-fit:cover;">
+            <p style="margin-top:12px;">
+              <strong>Exemplo visual:</strong> aqui o destaque está na distribuição correta dos blocos,
+              em uma leitura fluida e em uma apresentação mais profissional e organizada.
+            </p>
+          </div>
+
+          <div class="module-card">
+            <span class="module-tag">Módulo 3</span>
+            <h3>Palavras-chave certas</h3>
+            <p>
+              Saiba como adaptar seu currículo para diferentes vagas sem parecer artificial.
+              Neste módulo, você vai aprender a identificar palavras-chave importantes na descrição da vaga,
+              entender como inseri-las no currículo de forma natural e fortalecer a compatibilidade do seu perfil
+              com a oportunidade desejada. A ideia não é copiar e colar termos, mas traduzir sua experiência
+              em uma linguagem mais alinhada ao mercado.
+            </p>
+            <img src="./exemplo_modulo_3_curriculo.png" alt="Exemplo de currículo do módulo 3" class="module-example-image" style="width:100%; max-width:420px; border-radius:14px; margin-top:16px; display:block; object-fit:cover;">
+            <p style="margin-top:12px;">
+              <strong>Exemplo visual:</strong> este exemplo mostra um currículo adaptado por vaga,
+              com termos estratégicos distribuídos nas experiências, resumo e competências.
+            </p>
+          </div>
+
+          <div class="module-card locked">
+            <span class="module-tag">Módulo 4</span>
+            <h3>Currículo final estratégico</h3>
+            <p>
+              Monte uma versão mais forte do seu currículo com foco em resultado.
+              Este módulo reúne tudo o que foi visto anteriormente para que você finalize
+              um currículo mais competitivo, revisado e pronto para candidatura. Você vai entender
+              como revisar seu documento, ajustar detalhes finais, fortalecer seu posicionamento profissional
+              e evitar erros que passam despercebidos, mas comprometem sua imagem.
+            </p>
+            <img src="./exemplo_modulo_4_curriculo.png" alt="Exemplo de currículo do módulo 4" class="module-example-image" style="width:100%; max-width:420px; border-radius:14px; margin-top:16px; display:block; object-fit:cover;">
+            <p style="margin-top:12px;">
+              <strong>Exemplo visual:</strong> neste modelo final, o currículo já aparece revisado,
+              com melhor posicionamento, foco em resultado e uma leitura mais forte para o recrutador.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="aulas" class="tab-content">
+        <h2 class="section-title">Aula em destaque</h2>
+
+        <div class="lesson-detail-grid" id="lessonDetailGrid">
+          <div class="lesson-detail-card" id="lessonTopAnchor">
+            <span class="badge" id="currentModuleLabel">Conteúdo do módulo 1</span>
+            <h3 id="lessonTitle">Aula 1.1: O que é ATS</h3>
+            <p id="lessonShortText">
+              Antes de pensar em design, o mais importante é entender como o seu currículo
+              está sendo lido.
+            </p>
+
+            <div class="lesson-actions">
+              <button class="main-btn" id="markLessonBtn">Marcar como concluído</button>
+            </div>
+
+            <p id="lessonStatusText" style="margin-top: 16px;">Status: conteúdo disponível para conclusão</p>
+          </div>
+
+          <div class="lesson-content-card" id="lessonContentAnchor">
+            <h3>Conteúdo da aula</h3>
+            <div id="lessonContent">
+              <p>
+                Antes de pensar em design, o mais importante é entender como o seu currículo
+                está sendo lido. Muitas vezes, o problema não está na sua experiência, mas
+                na forma como ela é apresentada.
+              </p>
+              <p>
+                ATS é a sigla para Applicant Tracking System, ou seja, um sistema utilizado por muitas empresas
+                para organizar, filtrar e selecionar currículos durante os processos seletivos. Esses sistemas
+                procuram informações específicas, analisam compatibilidade com a vaga e ajudam a priorizar candidatos.
+              </p>
+              <p>
+                Isso significa que um currículo bonito visualmente nem sempre será eficiente. Se ele estiver mal organizado,
+                com excesso de elementos, informações vagas, palavras pouco estratégicas ou experiência mal descrita,
+                ele pode perder força logo na primeira triagem.
+              </p>
+              <p>
+                Nesta aula, você vai entender os erros mais comuns que fazem um currículo perder força no processo seletivo,
+                além de enxergar como pequenos ajustes podem melhorar muito sua apresentação profissional.
+              </p>
+              <p>
+                Você também vai perceber que passar pelo ATS não depende de "enganar o sistema", e sim de estruturar
+                seu currículo com clareza, coerência e alinhamento com a vaga desejada. Quando suas informações fazem sentido,
+                a leitura fica mais fácil e a sua candidatura ganha mais chances de avançar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <details class="trilha-aulas-accordion" style="margin-top: 24px;">
+          <summary class="module-summary-card" style="cursor:pointer;">
+            <h3>Trilha de aulas — Módulo 1</h3>
+            <p>Clique para abrir ou fechar o conteúdo deste módulo.</p>
+          </summary>
+          <div style="margin-top: 14px;">
+            <div class="module-summary-card" style="margin-bottom: 14px;">
+              <p>
+                Este primeiro módulo prepara a base do curso. A ideia é fazer você entender o ambiente em que o currículo será analisado,
+                quais critérios costumam ser usados pelos sistemas de triagem e por que um currículo confuso perde força mesmo quando o candidato é bom.
+              </p>
+              <ul>
+                <li><strong>Aula 1.1:</strong> O que é ATS e como ele participa do processo seletivo.</li>
+                <li><strong>Aula 1.2:</strong> Como o sistema identifica cargos, datas, palavras-chave e compatibilidade.</li>
+                <li><strong>Aula 1.3:</strong> Erros que atrapalham leitura automática, como excesso de design, elementos soltos e textos genéricos.</li>
+                <li><strong>Aula 1.4:</strong> O que deixa um currículo mais legível, mais forte e mais estratégico para triagem.</li>
+              </ul>
+            </div>
+
+            <div class="module-status-card">
+              <h3>Aplicação prática</h3>
+              <p>
+                Ao terminar este módulo, o aluno já deve conseguir olhar para o próprio currículo e identificar o que pode estar atrapalhando a leitura,
+                a organização das informações e a compatibilidade com vagas.
+              </p>
+            </div>
+          </div>
+        </details>
+
+        <details class="trilha-aulas-accordion" style="margin-top: 24px;">
+          <summary class="module-summary-card" style="cursor:pointer;">
+            <h3>Trilha de aulas — Módulo 2</h3>
+            <p>Clique para abrir ou fechar o conteúdo deste módulo.</p>
+          </summary>
+          <div style="margin-top: 14px;">
+            <div class="module-summary-card" style="margin-bottom: 14px;">
+              <p>
+                No segundo módulo, o foco é organizar o currículo como um documento profissional. Aqui o aluno entende onde cada informação deve ficar,
+                como estruturar os blocos principais e como tornar a leitura mais fluida para recrutadores e sistemas.
+              </p>
+              <ul>
+                <li><strong>Aula 2.1:</strong> Ordem ideal das seções e o que deve aparecer primeiro.</li>
+                <li><strong>Aula 2.2:</strong> Como escrever um resumo profissional objetivo e convincente.</li>
+                <li><strong>Aula 2.3:</strong> Como descrever experiências sem parecer genérico.</li>
+                <li><strong>Aula 2.4:</strong> Como posicionar formação, cursos, habilidades e dados complementares.</li>
+              </ul>
+            </div>
+
+            <div class="module-status-card">
+              <h3>Resultado esperado</h3>
+              <p>
+                Ao fim deste módulo, o aluno já terá uma estrutura-base mais limpa, mais clara e pronta para ser refinada com foco em vaga.
+              </p>
+            </div>
+          </div>
+        </details>
+
+        <details class="trilha-aulas-accordion" style="margin-top: 24px;">
+          <summary class="module-summary-card" style="cursor:pointer;">
+            <h3>Trilha de aulas — Módulo 3</h3>
+            <p>Clique para abrir ou fechar o conteúdo deste módulo.</p>
+          </summary>
+          <div style="margin-top: 14px;">
+            <div class="module-summary-card" style="margin-bottom: 14px;">
+              <p>
+                Neste módulo, o conteúdo aprofunda a adaptação estratégica do currículo. O aluno aprende a ler a vaga com atenção,
+                identificar palavras importantes e transformar a experiência já vivida em uma comunicação mais compatível com o mercado.
+              </p>
+              <ul>
+                <li><strong>Aula 3.1:</strong> Como analisar uma descrição de vaga com olhar estratégico.</li>
+                <li><strong>Aula 3.2:</strong> Como identificar palavras-chave importantes sem exagero.</li>
+                <li><strong>Aula 3.3:</strong> Como adaptar resumo, experiências e habilidades para cada oportunidade.</li>
+                <li><strong>Aula 3.4:</strong> Como evitar exagero, repetição e linguagem artificial.</li>
+              </ul>
+            </div>
+
+            <div class="module-status-card">
+              <h3>Resultado esperado</h3>
+              <p>
+                Ao concluir esta etapa, o aluno conseguirá personalizar o currículo para diferentes vagas com mais inteligência e naturalidade.
+              </p>
+            </div>
+          </div>
+        </details>
+
+        <details class="trilha-aulas-accordion" style="margin-top: 24px;">
+          <summary class="module-summary-card" style="cursor:pointer;">
+            <h3>Trilha de aulas — Módulo 4</h3>
+            <p>Clique para abrir ou fechar o conteúdo deste módulo.</p>
+          </summary>
+          <div style="margin-top: 14px;">
+            <div class="module-summary-card" style="margin-bottom: 14px;">
+              <p>
+                O quarto módulo fecha o curso com revisão estratégica. É o momento de consolidar todo o aprendizado, revisar o currículo com olhar crítico,
+                fortalecer a apresentação final e preparar o documento para candidatura real.
+              </p>
+              <ul>
+                <li><strong>Aula 4.1:</strong> Revisão completa do currículo antes do envio.</li>
+                <li><strong>Aula 4.2:</strong> Ajustes finais de clareza, objetividade e posicionamento profissional.</li>
+                <li><strong>Aula 4.3:</strong> Como transformar atividades em valor percebido.</li>
+                <li><strong>Aula 4.4:</strong> Checklist final para envio com mais segurança.</li>
+              </ul>
+            </div>
+
+            <div class="module-status-card">
+              <h3>Resultado esperado</h3>
+              <p>
+                Ao final do curso, o aluno terá um currículo mais forte, melhor estruturado, mais compatível com vagas reais e com maior potencial de avançar.
+              </p>
+            </div>
+          </div>
+        </details>
+
+        <div class="lesson-list" id="lessonListContainer">
+          <div class="lesson-item">
+            <h4>Aula 1</h4>
+            <p>O que faz um currículo ser ignorado e quais erros mais afastam sua candidatura da próxima etapa.</p>
+          </div>
+          <div class="lesson-item">
+            <h4>Aula 2</h4>
+            <p>Como estruturar seu currículo com clareza, lógica e ordem para facilitar a leitura do sistema e do recrutador.</p>
+          </div>
+          <div class="lesson-item">
+            <h4>Aula 3</h4>
+            <p>Como usar palavras-chave a seu favor sem deixar o texto artificial, repetitivo ou forçado.</p>
+          </div>
+          <div class="lesson-item">
+            <h4>Aula 4</h4>
+            <p>Como destacar experiências, resultados e competências de forma mais estratégica e valorizada pelo mercado.</p>
+          </div>
+          <div class="lesson-item">
+            <h4>Aula 5</h4>
+            <p>Revisão prática do currículo: o que manter, o que cortar e o que ajustar antes de começar a enviar.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="materiais" class="tab-content">
+        <h2 class="section-title">Materiais de apoio</h2>
+
+        <div class="materials-grid">
+          <div class="material-card">
+            <h3>Checklist</h3>
+            <p>Uma lista prática para revisar seu currículo antes de enviar.</p>
+            <a class="secondary-btn" href="./checklist_curriculo_cvia.pdf" target="_blank">Baixar</a>
+          </div>
+
+          <div class="material-card">
+            <h3>Modelo base</h3>
+            <p>Estrutura inicial para você adaptar ao seu objetivo profissional.</p>
+            <a class="secondary-btn" href="./modelo_base_curriculo_cvia.pdf" target="_blank">Baixar</a>
+          </div>
+
+          <div class="material-card">
+            <h3>Guia rápido</h3>
+            <p>Resumo com pontos essenciais para fortalecer sua candidatura.</p>
+            <a class="secondary-btn" href="./guia_rapido_curriculo_cvia.pdf" target="_blank">Baixar</a>
+          </div>
+
+          <div class="material-card">
+            <h3>PDF do Módulo 1</h3>
+            <p>Material complementar com explicação detalhada sobre ATS, triagem automática e leitura estratégica do currículo.</p>
+            <a class="secondary-btn" href="./modulo_1_como_a_ia_le_curriculo.pdf" target="_blank">Baixar</a>
+          </div>
+
+          <div class="material-card">
+            <h3>PDF do Módulo 2</h3>
+            <p>Guia de organização do currículo com foco em clareza, hierarquia de informações e apresentação profissional.</p>
+            <a class="secondary-btn" href="./modulo_2_estrutura_que_chama_atencao.pdf" target="_blank">Baixar</a>
+          </div>
+
+          <div class="material-card">
+            <h3>PDF do Módulo 3</h3>
+            <p>Explicação prática sobre uso de palavras-chave, adaptação por vaga e fortalecimento da compatibilidade do perfil.</p>
+            <a class="secondary-btn" href="./modulo_3_palavras_chave_certas.pdf" target="_blank">Baixar</a>
+          </div>
+
+          <div class="material-card">
+            <h3>PDF do Módulo 4</h3>
+            <p>Material final para revisão estratégica, ajustes de posicionamento e finalização do currículo.</p>
+            <a class="secondary-btn" href="./modulo_4_curriculo_final_estrategico.pdf" target="_blank">Baixar</a>
+          </div>
+        </div>
+
+        <div class="module-summary-wrap" style="margin-top: 24px;">
+          <div class="module-summary-card">
+            <h3>Como usar os materiais</h3>
+            <p>
+              Os materiais desta área foram pensados para complementar as aulas e facilitar sua aplicação prática.
+              Você pode usar os PDFs para revisar conceitos, organizar o currículo por etapas e consultar sempre que surgir dúvida.
+            </p>
+            <ul>
+              <li>Use o checklist antes de enviar seu currículo.</li>
+              <li>Use o modelo base como referência estrutural.</li>
+              <li>Use os PDFs dos módulos para aprofundar o conteúdo de cada etapa.</li>
+              <li>Revise os materiais sempre que adaptar o currículo para uma nova vaga.</li>
+            </ul>
+          </div>
+
+          <div class="module-status-card">
+            <h3>Dica de aplicação</h3>
+            <p>
+              Não tente fazer tudo de uma vez. O ideal é revisar módulo por módulo, aplicar os ajustes no currículo
+              e só depois avançar para a próxima etapa. Assim, o seu documento evolui com mais consistência.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="perfil" class="tab-content">
+        <h2 class="section-title">Seu perfil</h2>
+
+        <div class="profile-card">
+          <p><strong>Nome:</strong> <span id="perfilNome">-</span></p>
+          <p><strong>E-mail:</strong> <span id="perfilEmail">-</span></p>
+          <p><strong>Celular:</strong> <span id="perfilCelular">-</span></p>
+          <p><strong>Data de nascimento:</strong> <span id="perfilNascimento">-</span></p>
+          <p><strong>Área de interesse:</strong> <span id="perfilArea">-</span></p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="area.js"></script>
+</body>
+</html>

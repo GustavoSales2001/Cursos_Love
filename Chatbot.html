@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat de Atendimento</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: transparent;
+    }
+
+    .chat-toggle {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      background: #25d366;
+      color: #fff;
+      font-size: 26px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
+
+    .chat-box {
+      position: fixed;
+      right: 20px;
+      bottom: 90px;
+      width: 360px;
+      max-width: calc(100vw - 30px);
+      height: 540px;
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+      display: none;
+      flex-direction: column;
+      z-index: 9999;
+      border: 1px solid #e5e7eb;
+    }
+
+    .chat-box.active {
+      display: flex;
+    }
+
+    .chat-header {
+      background: #111827;
+      color: #fff;
+      padding: 16px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .chat-sub {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px;
+      background: #f9fafb;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      line-height: 1.4;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .msg.bot {
+      background: #e5e7eb;
+      color: #111827;
+      align-self: flex-start;
+    }
+
+    .msg.user {
+      background: #25d366;
+      color: #fff;
+      align-self: flex-end;
+    }
+
+    .chat-form {
+      padding: 12px;
+      border-top: 1px solid #eee;
+      background: #fff;
+    }
+
+    .chat-form input,
+    .chat-form textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .chat-form textarea {
+      resize: none;
+      min-height: 70px;
+    }
+
+    .chat-form button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #111827;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .chat-form button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 480px) {
+      .chat-box {
+        right: 10px;
+        bottom: 80px;
+        width: calc(100vw - 20px);
+        height: 78vh;
+      }
+
+      .chat-toggle {
+        right: 10px;
+        bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="chat-toggle" id="chatToggle">💬</button>
+
+  <div class="chat-box" id="chatBox">
+    <div class="chat-header">
+      Atendimento
+      <div class="chat-sub">Tire dúvidas sobre acesso, pagamento e suporte</div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot">Oi! Me chama aqui e eu te ajudo com pagamento, acesso e dúvidas 😊</div>
+    </div>
+
+    <form class="chat-form" id="chatForm">
+      <input type="text" id="nome" placeholder="Seu nome" />
+      <input type="email" id="email" placeholder="Seu e-mail" />
+      <input type="text" id="celular" placeholder="Seu WhatsApp com DDD" />
+      <textarea id="mensagem" placeholder="Digite sua mensagem"></textarea>
+      <button type="submit" id="sendBtn">Enviar</button>
+    </form>
+  </div>
+
+  <script>
+    const API_BASE_URL = "https://SEU-BACKEND.up.railway.app/api";
+
+    const chatToggle = document.getElementById("chatToggle");
+    const chatBox = document.getElementById("chatBox");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatForm = document.getElementById("chatForm");
+    const sendBtn = document.getElementById("sendBtn");
+
+    chatToggle.addEventListener("click", () => {
+      chatBox.classList.toggle("active");
+    });
+
+    function addMessage(text, type = "bot") {
+      const div = document.createElement("div");
+      div.className = `msg ${type}`;
+      div.textContent = text;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      const mensagemEl = document.getElementById("mensagem");
+      const mensagem = mensagemEl.value.trim();
+
+      if (!mensagem) return;
+
+      addMessage(mensagem, "user");
+      mensagemEl.value = "";
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Enviando...";
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/chat/start`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            nome,
+            email,
+            celular,
+            mensagem
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          addMessage(data.error || "Erro ao falar com o servidor.", "bot");
+        } else {
+          addMessage(
+            data.reply || "Recebi sua mensagem. Como posso te ajudar?",
+            "bot"
+          );
+        }
+      } catch (error) {
+        addMessage("Não consegui conectar ao servidor agora.", "bot");
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Enviar";
+      }
+    });
+  </script>
+</body>
+</html>
