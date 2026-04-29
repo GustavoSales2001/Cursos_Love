@@ -1789,7 +1789,9 @@ ${linkCurso}
 
 Se der erro técnico, fale com Gustavo:
 
-👉 ${linkGustavo()}`;
+👉 ${linkGustavo()} 
+
+Se houver qualquer outra dúvida podemos prosseguir por aqui mesmo, fico à sua disposição`;
   }
 
   // =====================================================
