@@ -546,8 +546,8 @@ async function getPendingWhatsappUsers() {
   const [rows] = await pool.query(
     `
     SELECT id, name, celular
-    FROM users
-    WHERE id = 125
+      FROM users
+      WHERE id >= 100
       AND access_released = 0
       AND whatsapp_sent = 0
       AND whatsapp_opt_in = 1
@@ -1983,8 +1983,6 @@ app.get("/api/inbox/conversations", async (_req, res) => {
         u.whatsapp_sent,
         u.last_customer_message_at,
         u.last_bot_message_at,
-        u.last_customer_message_at,
-        u.last_bot_message_at,
         u.bot_paused,
         (
           SELECT message_text 
@@ -2862,7 +2860,7 @@ async function getUsersForWhatsappFollowUp() {
     `
     SELECT id, name, celular, whatsapp_followup_count
     FROM users
-      WHERE id = 125
+      WHERE id >= 100
       AND access_released = 0
       AND whatsapp_sent = 1
       AND whatsapp_opt_in = 1
