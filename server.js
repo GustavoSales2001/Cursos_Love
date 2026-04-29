@@ -268,6 +268,13 @@ async function ensureTables() {
     `);
   }
 
+  if (!columnNames.includes("bot_paused")) {
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN bot_paused TINYINT(1) NOT NULL DEFAULT 0
+    `);
+  }
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS payments (
       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -517,7 +524,7 @@ async function getUserByPhone(celular) {
 
   const [rows] = await pool.query(
     `
-    SELECT id, name, email, celular, access_released, whatsapp_sent
+    SELECT id, name, email, celular, access_released, whatsapp_sent, bot_paused
     FROM users
     WHERE 
   REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(celular, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?
@@ -544,6 +551,7 @@ async function getPendingWhatsappUsers() {
       AND access_released = 0
       AND whatsapp_sent = 0
       AND whatsapp_opt_in = 1
+      AND bot_paused = 0
       AND celular IS NOT NULL
       AND celular <> ''
       AND created_at <= NOW() - INTERVAL 1 MINUTE
@@ -1973,6 +1981,9 @@ app.get("/api/inbox/conversations", async (_req, res) => {
         u.whatsapp_sent,
         u.last_customer_message_at,
         u.last_bot_message_at,
+        u.last_customer_message_at,
+        u.last_bot_message_at,
+        u.bot_paused,
         (
           SELECT message_text 
           FROM whatsapp_messages wm 
@@ -2016,6 +2027,37 @@ app.get("/api/inbox/messages/:userId", async (req, res) => {
     res.json({ success: true, messages });
   } catch (error) {
     res.status(500).json({ error: "Erro ao buscar mensagens", details: error.message });
+  }
+});
+
+app.post("/api/inbox/bot-status", async (req, res) => {
+  try {
+    const { userId, paused } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId é obrigatório" });
+    }
+
+    await pool.query(
+      `
+      UPDATE users
+      SET bot_paused = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+      `,
+      [paused ? 1 : 0, userId]
+    );
+
+    res.json({
+      success: true,
+      userId,
+      bot_paused: paused ? 1 : 0
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "Erro ao alterar status do bot",
+      details: error.message
+    });
   }
 });
 
@@ -2728,6 +2770,21 @@ app.post("/api/webhooks/whatsapp", async (req, res) => {
       rawPayload: req.body
     });
 
+    if (user?.bot_paused) {
+  if (user?.id) {
+    await pool.query(`
+      UPDATE users
+      SET last_whatsapp_message_at = NOW(),
+          last_customer_message_at = NOW(),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [user.id]);
+  }
+
+  console.log(`⏸️ Bot pausado para user ${user?.id}`);
+  return res.sendStatus(200);
+}
+
     if (user?.id) {
       await pool.query(
         `
@@ -2803,11 +2860,12 @@ async function getUsersForWhatsappFollowUp() {
     `
     SELECT id, name, celular, whatsapp_followup_count
     FROM users
-   WHERE id = 125
-  AND access_released = 0
-  AND whatsapp_sent = 1
-  AND whatsapp_opt_in = 1
-  AND whatsapp_followup_finished = 0
+      WHERE id = 125
+      AND access_released = 0
+      AND whatsapp_sent = 1
+      AND whatsapp_opt_in = 1
+      AND bot_paused = 0
+      AND whatsapp_followup_finished = 0
       AND whatsapp_followup_count < ?
       AND celular IS NOT NULL
       AND celular <> ''
