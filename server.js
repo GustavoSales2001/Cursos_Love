@@ -8,6 +8,10 @@ import { MercadoPagoConfig, Payment } from "mercadopago";
 dotenv.config();
 
 const app = express();
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const port = Number(process.env.PORT || 3000);
 
 app.disable("x-powered-by");
@@ -1927,6 +1931,10 @@ Vi seu interesse aqui no curso. Posso te ajudar a liberar o acesso rapidinho?`
         ];
 
         const mensagemInicial = mensagensTeste[Math.floor(Math.random() * mensagensTeste.length)];
+
+        const randomDelay = Math.floor(Math.random() * 2000) + 8000; // 8–10s
+
+        await delay(randomDelay);
 
         const textResponse = await sendWhatsAppText(celular, mensagemInicial);
 
