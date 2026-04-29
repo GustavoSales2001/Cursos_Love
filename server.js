@@ -30,7 +30,6 @@ app.use(
   cors({
     origin(origin, callback) {
       if (!origin) return callback(null, true);
-
       const allowed = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
