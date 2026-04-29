@@ -29,7 +29,7 @@ const allowedOrigins = cleanEnv(process.env.FRONTEND_URL)
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin) return callback(null, true);
+if (!origin || origin === "null") return callback(null, true);
       const allowed = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
