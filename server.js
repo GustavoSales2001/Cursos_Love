@@ -54,7 +54,7 @@ let pool;
 let whatsappJobRunning = false;
 
 /* TESTE: envia apenas para um usuário específico */
-const TEST_ONLY_USER_IDS = [7, 125];
+//const TEST_ONLY_USER_IDS = [7, 125];
 
 function getWhatsAppConfig() {
   const token = cleanEnv(process.env.WHATSAPP_TOKEN);
@@ -520,15 +520,14 @@ async function getPendingWhatsappUsers() {
     `
     SELECT id, name, celular
     FROM users
-    WHERE id IN (?, ?)
+    WHERE id = 125
       AND access_released = 0
       AND whatsapp_sent = 0
       AND whatsapp_opt_in = 1
       AND celular IS NOT NULL
       AND celular <> ''
-      AND created_at <= NOW() - INTERVAL 3 MINUTE
-    `,
-    TEST_ONLY_USER_IDS
+      AND created_at <= NOW() - INTERVAL 1 MINUTE
+    `
   );
 
   return rows;
@@ -1938,6 +1937,116 @@ Vi seu interesse aqui no curso. Posso te ajudar a liberar o acesso rapidinho?`
   }
 }
 
+app.get("/api/inbox/conversations", async (_req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u.celular,
+        u.access_released,
+        u.whatsapp_sent,
+        u.last_customer_message_at,
+        u.last_bot_message_at,
+        (
+          SELECT message_text 
+          FROM whatsapp_messages wm 
+          WHERE wm.user_id = u.id 
+          ORDER BY wm.created_at DESC 
+          LIMIT 1
+        ) AS last_message,
+        (
+          SELECT created_at 
+          FROM whatsapp_messages wm 
+          WHERE wm.user_id = u.id 
+          ORDER BY wm.created_at DESC 
+          LIMIT 1
+        ) AS last_message_at
+      FROM users u
+      WHERE u.celular IS NOT NULL
+        AND u.celular <> ''
+      ORDER BY last_message_at DESC
+    `);
+
+    res.json({ success: true, conversations: rows });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar conversas", details: error.message });
+  }
+});
+
+app.get("/api/inbox/messages/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const [messages] = await pool.query(
+      `
+      SELECT id, user_id, celular, direction, message_text, created_at
+      FROM whatsapp_messages
+      WHERE user_id = ?
+      ORDER BY created_at ASC
+      `,
+      [userId]
+    );
+
+    res.json({ success: true, messages });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar mensagens", details: error.message });
+  }
+});
+
+app.post("/api/inbox/send", async (req, res) => {
+  try {
+    const { userId, message } = req.body;
+
+    if (!userId || !message) {
+      return res.status(400).json({ error: "userId e message são obrigatórios" });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT id, name, celular
+      FROM users
+      WHERE id = ?
+      LIMIT 1
+      `,
+      [userId]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    const user = rows[0];
+    const celular = normalizePhoneBR(user.celular);
+
+    const response = await sendWhatsAppText(celular, message);
+
+    await saveWhatsappMessage({
+      userId: user.id,
+      celular,
+      direction: "out",
+      messageText: message,
+      waMessageId: response?.messages?.[0]?.id || null,
+      rawPayload: response
+    });
+
+    await pool.query(
+      `
+      UPDATE users
+      SET last_bot_message_at = NOW(),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+      `,
+      [user.id]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao enviar mensagem", details: error.message });
+  }
+});
+
 app.get("/api/health", async (_req, res) => {
   try {
     await pool.query("SELECT 1");
@@ -2670,11 +2779,11 @@ async function getUsersForWhatsappFollowUp() {
     `
     SELECT id, name, celular, whatsapp_followup_count
     FROM users
-    WHERE id IN (?, ?)
-      AND access_released = 0
-      AND whatsapp_sent = 1
-      AND whatsapp_opt_in = 1
-      AND whatsapp_followup_finished = 0
+   WHERE id = 125
+  AND access_released = 0
+  AND whatsapp_sent = 1
+  AND whatsapp_opt_in = 1
+  AND whatsapp_followup_finished = 0
       AND whatsapp_followup_count < ?
       AND celular IS NOT NULL
       AND celular <> ''
@@ -2687,7 +2796,7 @@ async function getUsersForWhatsappFollowUp() {
           AND wm.created_at >= users.whatsapp_sent_at
       )
     `,
-    [...TEST_ONLY_USER_IDS, MAX_FOLLOWUPS, FOLLOWUP_INTERVAL_MINUTES]
+    [MAX_FOLLOWUPS, FOLLOWUP_INTERVAL_MINUTES]
   );
 
   return rows;
