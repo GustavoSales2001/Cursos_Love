@@ -515,10 +515,17 @@ async function getUserByPhone(celular) {
     `
     SELECT id, name, email, celular, access_released, whatsapp_sent
     FROM users
-    WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(celular, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') = ?
+    WHERE 
+  REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(celular, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?
+  OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(celular, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?
+  OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(celular, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?
     LIMIT 1
     `,
-    [normalized]
+    [
+  `%${normalized.slice(-11)}`,
+  `%${normalized.slice(-10)}`,
+  `%${normalized.slice(-9)}`
+    ]
   );
 
   return rows[0] || null;
