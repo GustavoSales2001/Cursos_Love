@@ -29,12 +29,22 @@ const allowedOrigins = cleanEnv(process.env.FRONTEND_URL)
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true);
+
+      const allowed = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://gustavosales2001.github.io"
+      ];
+
+      if (allowed.includes(origin)) {
         return callback(null, true);
       }
+
+      console.log("CORS bloqueado:", origin);
       return callback(new Error("Origem não permitida pelo CORS."));
     },
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"]
   })
 );
