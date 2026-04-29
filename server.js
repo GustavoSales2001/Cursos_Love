@@ -554,7 +554,7 @@ async function getPendingWhatsappUsers() {
       AND bot_paused = 0
       AND celular IS NOT NULL
       AND celular <> ''
-      AND created_at <= NOW() - INTERVAL 1 MINUTE
+      AND created_at <= NOW() - INTERVAL 20 MINUTE
     `
   );
 
