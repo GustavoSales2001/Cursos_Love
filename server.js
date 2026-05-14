@@ -2829,17 +2829,17 @@ if (!reply) {
   }
 });
 
-const FOLLOWUP_INTERVAL_MINUTES = 5;
-const MAX_FOLLOWUPS = 3;
+const FOLLOWUP_INTERVALS = [30, 90, 180];
+const MAX_FOLLOWUPS = FOLLOWUP_INTERVALS.length;
 
 function getFollowupMessage(followupCount) {
   const linkCurso = "https://gustavosales2001.github.io/Cursos_Love/";
   const contatoHumano = "11933128628";
 
   const mensagens = [
-    `Oi 😊 passando só pra saber se ficou alguma dúvida sobre o curso ou sobre o acesso com desconto.`,
+    `Oi, estou passando apenas pra saber se ficou alguma dúvida sobre o curso ou se teve algum problema pra finalizar o acesso? `,
 
-    `Vi que você ainda não finalizou. Quer que eu te explique rapidinho como funciona o cadastro e pagamento?`,
+    `Quer que eu te explique rapidinho como funciona o cadastro e pagamento?`,
 
     `Última mensagem por aqui 😊
 
@@ -2869,7 +2869,11 @@ async function getUsersForWhatsappFollowUp() {
       AND whatsapp_followup_count < ?
       AND celular IS NOT NULL
       AND celular <> ''
-      AND last_bot_message_at <= NOW() - INTERVAL ? MINUTE
+      AND (
+        (whatsapp_followup_count = 0 AND last_bot_message_at <= NOW() - INTERVAL ? MINUTE)
+        OR (whatsapp_followup_count = 1 AND last_bot_message_at <= NOW() - INTERVAL ? MINUTE)
+        OR (whatsapp_followup_count = 2 AND last_bot_message_at <= NOW() - INTERVAL ? MINUTE)
+      )
       AND NOT EXISTS (
         SELECT 1
         FROM whatsapp_messages wm
@@ -2878,7 +2882,7 @@ async function getUsersForWhatsappFollowUp() {
           AND wm.created_at >= users.whatsapp_sent_at
       )
     `,
-    [MAX_FOLLOWUPS, FOLLOWUP_INTERVAL_MINUTES]
+    [MAX_FOLLOWUPS, FOLLOWUP_INTERVALS[0], FOLLOWUP_INTERVALS[1], FOLLOWUP_INTERVALS[2]]
   );
 
   return rows;
