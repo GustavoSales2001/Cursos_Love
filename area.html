@@ -5,21 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Área do Aluno - CVIA</title>
   <link rel="stylesheet" href="area.css">
+  <style>
+    .hero-info::before {
+      content: '';
+      position: absolute;
+      top: -30px;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.1), transparent);
+      border-radius: 50%;
+      filter: blur(20px);
+    }
+
+    .welcome-section {
+      margin-bottom: 32px;
+    }
+
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.2), transparent);
+      margin: 32px 0;
+    }
+
+    .info-card::before {
+      content: '💡';
+      display: block;
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+
+    .info-card:nth-child(2)::before {
+      content: '🎯';
+    }
+
+    .info-card:nth-child(3)::before {
+      content: '📍';
+    }
+  </style>
 </head>
 <body>
   <div class="dashboard">
     <aside class="sidebar">
       <div class="brand">
         <h2>CVIA</h2>
-        <p>Área do aluno</p>
+        <p>Currículo que Vence a IA</p>
       </div>
 
       <nav class="menu">
-        <button class="tab-btn active" data-tab="inicio">Início</button>
-        <button class="tab-btn" data-tab="modulos">Módulos</button>
-        <button class="tab-btn" data-tab="aulas">Aulas</button>
-        <button class="tab-btn" data-tab="materiais">Materiais</button>
-        <button class="tab-btn" data-tab="perfil">Perfil</button>
+        <button class="tab-btn active" data-tab="inicio">
+          <span>📚</span> Início
+        </button>
+        <button class="tab-btn" data-tab="modulos">
+          <span>📖</span> Módulos
+        </button>
+        <button class="tab-btn" data-tab="aulas">
+          <span>▶️</span> Aulas
+        </button>
+        <button class="tab-btn" data-tab="materiais">
+          <span>📄</span> Materiais
+        </button>
+        <button class="tab-btn" data-tab="perfil">
+          <span>👤</span> Perfil
+        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -30,7 +78,7 @@
     <main class="content">
       <header class="topbar">
         <div>
-          <h1>Bem-vindo(a) à sua área</h1>
+          <h1>Bem-vindo à sua Área</h1>
           <p id="welcomeText">Carregando seus dados...</p>
         </div>
       </header>
@@ -482,9 +530,71 @@
           <p><strong>Área de interesse:</strong> <span id="perfilArea">-</span></p>
         </div>
       </section>
+
+      <!-- Modal de Conclusão do Curso -->
+      <div id="completionModal" class="completion-modal" style="display: none;">
+        <div class="completion-overlay"></div>
+        <div class="completion-card">
+          <div class="completion-header">
+            <div class="completion-icon">🎉</div>
+            <h2>Parabéns!</h2>
+            <p class="completion-subtitle">Você completou o curso com sucesso!</p>
+          </div>
+
+          <div class="completion-content">
+            <div class="completion-message">
+              <h3>Você finalizou todos os módulos do curso</h3>
+              <p>
+                Você completou a jornada de aprendizado e agora possui todo o conhecimento necessário 
+                para estruturar um currículo estratégico e competitivo. Excelente trabalho!
+              </p>
+            </div>
+
+            <div class="completion-features">
+              <div class="feature-item">
+                <span class="feature-icon">📚</span>
+                <div>
+                  <h4>Acesso ao conteúdo</h4>
+                  <p>Todo o conteúdo do curso permanece disponível para consulta sempre que precisar.</p>
+                </div>
+              </div>
+
+              <div class="feature-item">
+                <span class="feature-icon">📄</span>
+                <div>
+                  <h4>Materiais de apoio</h4>
+                  <p>Acesse checklists, modelos e guias práticos na seção de Materiais.</p>
+                </div>
+              </div>
+
+              <div class="feature-item">
+                <span class="feature-icon">🚀</span>
+                <div>
+                  <h4>Em breve</h4>
+                  <p>Estamos preparando novos conteúdos e módulos avançados para você.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="completion-actions">
+              <button class="completion-btn primary" onclick="goToMaterials()">
+                Explorar Materiais
+              </button>
+              <button class="completion-btn secondary" onclick="closeCompletionModal()">
+                Voltar ao Início
+              </button>
+            </div>
+          </div>
+
+          <div class="completion-footer">
+            <p>Obrigado por confiar em nosso curso! Continue desenvolvendo seu potencial! 💪</p>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
+  <script src="notifications.js"></script>
   <script src="area.js"></script>
 </body>
 </html>

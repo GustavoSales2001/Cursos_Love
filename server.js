@@ -2852,7 +2852,7 @@ Se preferir falar direto comigo, chama aqui:
 https://wa.me/55${contatoHumano}`
   ];
 
-  return mensagens[followupCount] || null;
+  return mensagens[followupCount] || null;  
 }
 
 async function getUsersForWhatsappFollowUp() {

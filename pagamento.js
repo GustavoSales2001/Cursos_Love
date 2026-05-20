@@ -14,8 +14,15 @@ const jaPagou = usuarioAtual.email
   : null;
 
 if (jaPagou === "true") {
-  alert("Seu acesso já foi liberado. Você não precisa pagar novamente.");
-  window.location.href = "area.html";
+  // Mostrar notificação quando a página carregar
+  setTimeout(() => {
+    if (typeof notify !== 'undefined') {
+      notify.info("Seu acesso já foi liberado. Você não precisa pagar novamente.", 2000);
+    }
+    setTimeout(() => {
+      window.location.href = "area.html";
+    }, 500);
+  }, 500);
 }
 
 radios.forEach(radio => {
@@ -161,23 +168,31 @@ async function criarPix() {
       </div>
     `;
   } catch (error) {
-    alert(error.message);
+    if (typeof notify !== 'undefined') {
+      notify.error(error.message || "Erro ao gerar código PIX");
+    }
   }
 }
 
 function copiarPix() {
   if (!ultimoPixCode) {
-    alert("Nenhum código PIX disponível.");
+    if (typeof notify !== 'undefined') {
+      notify.warning("Nenhum código PIX disponível.");
+    }
     return;
   }
 
   navigator.clipboard.writeText(ultimoPixCode);
-  alert("Copiado!");
+  if (typeof notify !== 'undefined') {
+    notify.success("Código PIX copiado com sucesso!");
+  }
 }
 
 async function consultarStatusPagamento() {
   if (!pagamentoAtualId) {
-    alert("Nenhum pagamento encontrado.");
+    if (typeof notify !== 'undefined') {
+      notify.warning("Nenhum pagamento encontrado.");
+    }
     return;
   }
 
@@ -190,10 +205,16 @@ async function consultarStatusPagamento() {
       localStorage.setItem(`pagamentoConfirmado_${usuario.email}`, "true");
     }
 
-    alert("Pagamento aprovado!");
-    window.location.href = "area.html";
+    if (typeof notify !== 'undefined') {
+      notify.success("Pagamento aprovado! Redirecionando para área do aluno...", 2000);
+    }
+    setTimeout(() => {
+      window.location.href = "area.html";
+    }, 500);
   } else {
-    alert("Pagamento ainda não aprovado");
+    if (typeof notify !== 'undefined') {
+      notify.info("Pagamento ainda não foi aprovado. Tente novamente em alguns instantes.");
+    }
   }
 }
 

@@ -46,8 +46,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
   if (!usuario || !usuario.email) {
-    alert("Você precisa fazer login primeiro.");
-    window.location.href = "login.html";
+    notify.warning("Você precisa fazer login primeiro.");
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 1500);
     return;
   }
 
@@ -59,9 +61,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data = await response.json();
 
     if (!response.ok || !data.user) {
-      alert("Usuário não encontrado. Faça login novamente.");
+      notify.error("Usuário não encontrado. Faça login novamente.");
       localStorage.removeItem("usuario");
-      window.location.href = "login.html";
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 1500);
       return;
     }
 
@@ -77,8 +81,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 
     if (usuarioBanco.access_released !== 1) {
-      alert("Você precisa finalizar o pagamento antes de acessar o conteúdo.");
-      window.location.href = "pagamento.html";
+      notify.warning("Você precisa finalizar o pagamento antes de acessar o conteúdo.");
+      setTimeout(() => {
+        window.location.href = "pagamento.html";
+      }, 1500);
       return;
     }
 
@@ -88,6 +94,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (welcomeText) {
       welcomeText.textContent = `Olá, ${usuarioAtualizado.nome || "aluno(a)"}. Bom te ver por aqui.`;
     }
+
+    notify.success("Bem-vindo(a)! Seus dados foram carregados com sucesso.", 3000);
 
     const perfilNome = document.getElementById("perfilNome");
     const perfilEmail = document.getElementById("perfilEmail");
@@ -102,8 +110,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (perfilArea) perfilArea.textContent = usuarioAtualizado.area || "-";
   } catch (error) {
     console.error("Erro ao validar acesso:", error);
-    alert("Erro ao validar acesso. Tente novamente.");
-    window.location.href = "login.html";
+    notify.error("Erro ao validar acesso. Tente novamente.");
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 1500);
     return;
   }
 
@@ -111,8 +121,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       localStorage.removeItem("usuario");
-      alert("Você saiu da área do aluno.");
-      window.location.href = "login.html";
+      notify.info("Você saiu da área do aluno.", 2000);
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 500);
     });
   }
 
@@ -640,7 +652,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       markLessonBtn.onclick = () => {
         if (isLessonCompleted(lesson.id)) {
-          alert("Essa aula já foi marcada como concluida.");
+          notify.warning("Essa aula já foi marcada como concluida.");
           return;
         }
 
@@ -650,9 +662,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (currentModuleCompleted && courseProgress.unlockedModule === module.id && module.id < modulesData.length) {
           courseProgress.unlockedModule = module.id + 1;
-          alert(`Módulo ${module.id} finalizado com sucesso! O módulo ${module.id + 1} foi liberado.`);
+          notify.success(`Módulo ${module.id} finalizado com sucesso! O módulo ${module.id + 1} foi liberado.`);
         } else {
-          alert("Aula marcada como concluida com sucesso!");
+          notify.success("Aula marcada como concluida com sucesso!");
+        }
+
+        // Verificar se todos os módulos foram concluídos
+        const todosModulosConcluidos = modulesData.every(m => isModuleCompleted(m.id));
+        if (todosModulosConcluidos) {
+          localStorage.setItem(`courseCompleted_${usuario.email}`, "true");
+          setTimeout(() => {
+            openCompletionModal();
+          }, 500);
         }
 
         const nextLesson = module.lessons.find(item => !isLessonCompleted(item.id));
@@ -682,6 +703,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         : "Status: aula disponível para concluir";
     }
   }
+
+  // Funções do Modal de Conclusão
+  function openCompletionModal() {
+    const completionModal = document.getElementById("completionModal");
+    if (completionModal) {
+      completionModal.style.display = "flex";
+      notify.success("Parabéns! Você finalizou todos os módulos do curso!");
+    }
+  }
+
+  function closeCompletionModal() {
+    const completionModal = document.getElementById("completionModal");
+    if (completionModal) {
+      completionModal.style.display = "none";
+    }
+  }
+
+  function goToMaterials() {
+    abrirTab("materiais");
+    closeCompletionModal();
+  }
+
+  window.openCompletionModal = openCompletionModal;
+  window.closeCompletionModal = closeCompletionModal;
+  window.goToMaterials = goToMaterials;
 
   renderModules();
   renderModuleSummary();

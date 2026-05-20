@@ -5,6 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pagamento - CVIA</title>
   <link rel="stylesheet" href="pagamento.css">
+  <style>
+    * {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%);
+    }
+
+    .payment-page {
+      position: relative;
+    }
+
+    .payment-page::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .payment-card {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
 </head>
 <body>
   <div class="payment-page">
@@ -23,7 +54,7 @@
         <span class="small-text current-label">Por apenas</span>
         <h2>R$ 19,99</h2>
 
-        <p>Pagamento único de acesso</p>
+        <p>Pagamento único de acesso completo</p>
       </div>
 
       <div class="payment-options">
@@ -67,6 +98,7 @@
     </div>
   </div>
 
+  <script src="notifications.js"></script>
   <script src="pagamento.js"></script>
 </body>
 </html>
