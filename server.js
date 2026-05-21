@@ -2837,17 +2837,17 @@ function getFollowupMessage(followupCount) {
   const contatoHumano = "11933128628";
 
   const mensagens = [
-    `Oi, estou passando apenas pra saber se ficou alguma dúvida sobre o curso ou se teve algum problema pra finalizar o acesso? `,
+    `Olá, tudo bem? estou passando apenas pra saber se ficou alguma dúvida sobre o curso, se houve algum outro problema, pode me chamar por aqui!`,
 
     `Quer que eu te explique rapidinho como funciona o cadastro e pagamento?`,
 
-    `Última mensagem por aqui 😊
+    `Última mensagem por aqui...
 
 Se quiser garantir o acesso com desconto, é só entrar no link:
 
 ${linkCurso}
 
-Se preferir falar direto comigo, chama aqui:
+Se preferir falar direto com nosso especialista, chama aqui:
 
 https://wa.me/55${contatoHumano}`
   ];
