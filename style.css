@@ -144,3 +144,29 @@ a{color:inherit;text-decoration:none}
   .benefits,.testimonials{grid-template-columns:1fr}
   .hero-text h1{font-size:1.8rem}
 }
+
+@media (max-width:480px){
+  .hero{padding:18px 4%}
+  .hero-content{grid-template-columns:1fr;gap:18px;margin:20px auto}
+  .hero-visual{padding:14px}
+  .hero-text h1{font-size:1.6rem}
+  .subtitle{font-size:.95rem}
+  .hero-buttons{flex-direction:column;gap:10px}
+  .btn-primary,.btn-secondary,.btn-nav{width:100%;justify-content:center;padding:12px;border-radius:12px}
+  .hero-stats{flex-wrap:wrap;gap:10px}
+  .hero-stats div{min-width:30%}
+  .result-card{min-height:180px;padding:12px}
+  .carousel{border-radius:10px}
+  .carousel-track{gap:8px}
+  .result-slide{min-width:100%}
+  .feature-grid,.cards,.process-list,.benefits,.testimonials{grid-template-columns:1fr}
+  .feature-card,.card,.process-item,.benefit-item,.testimonial{padding:14px}
+  .container{padding:0 12px}
+  .nav-links.show{position:fixed;left:10px;right:10px;top:68px}
+  .nav-links li a{padding:12px 14px;display:block;border-radius:10px}
+  .whatsapp-float{right:18px;bottom:18px;width:52px;height:52px}
+  .whatsapp-icon{width:28px;height:28px}
+  .cta-section{padding:24px 4%}
+  .footer{padding:18px;font-size:.9rem}
+  .feature-list{padding-left:12px}
+}
