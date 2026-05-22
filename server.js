@@ -693,13 +693,13 @@ O curso te ensina a ajustar isso de forma prática, sem inventar informação e 
   // 6. PREÇO / VALOR / CUSTO
   // =====================================================
   if (hasAny(msg, ["preco", "preço", "valor", "quanto custa", "custa", "custo", "investimento"])) {
-    return `Você consegue ver o valor atualizado direto na página do curso:
+    return `Antes de falar de preço, me conta qual é a sua maior dúvida hoje:
 
-${linkCurso}
+✔ é sobre o currículo? 
+✔ é sobre filtros automáticos? 
+✔ é sobre não receber retorno das vagas?
 
-Antes de decidir, vale pensar assim: o objetivo do curso é te ajudar a melhorar um ponto que pode estar travando suas oportunidades — o currículo.
-
-Se você está enviando currículo e quase não recebe retorno, talvez o problema não seja sua capacidade, mas a forma como suas informações estão sendo apresentadas.`;
+Assim eu te explico melhor se esse curso faz sentido para o seu caso e também te mostro uma condição especial no final.`;
   }
 
   // =====================================================
@@ -708,24 +708,30 @@ Se você está enviando currículo e quase não recebe retorno, talvez o problem
   if (hasAny(msg, ["link", "acessar", "comprar", "quero comprar", "onde compro", "onde acesso", "pagina", "página"])) {
     return `Claro 😊
 
-Você pode acessar por aqui:
+Você pode acessar por aqui quando estiver pronto:
 
 ${linkCurso}
 
-Antes de entrar, se tiver qualquer dúvida sobre o curso, currículo ou se ele serve para o seu momento, pode perguntar.`;
+Mas antes de seguir, me conta qual a sua maior dúvida:
+- é sobre currículo?
+- é sobre o processo seletivo?
+- é sobre o uso de palavras-chave?
+
+Assim eu te explico melhor e depois te passo o link com desconto, se você quiser.`;
   }
 
   // =====================================================
   // 8. DESCONTO / PROMOÇÃO / CUPOM
   // =====================================================
   if (hasAny(msg, ["desconto", "promocao", "promoção", "cupom", "oferta", "condicao especial", "condição especial"])) {
-    return `A condição disponível aparece direto na página do curso:
+    return `Tem sim uma condição especial para quem está conversando por aqui.
 
-${linkCurso}
+Antes de te passar o link com desconto, me conta um pouco mais sobre sua situação:
+- você está sem retorno nas candidaturas?
+- acha seu currículo desorganizado?
+- tem dúvidas sobre como usar palavras-chave?
 
-O mais importante é você analisar se o conteúdo faz sentido para o que você precisa agora.
-
-Se sua dificuldade é currículo, falta de retorno, Gupy, IA ou como se apresentar melhor nas vagas, esse curso foi feito justamente para isso.`;
+Assim posso te orientar melhor e te mostrar o caminho certo para aproveitar o desconto.`;
   }
 
   // =====================================================
@@ -1775,23 +1781,13 @@ Você está mais interessado em:
   if (hasAny(msg, ["sim", "quero", "tenho interesse", "pode mandar", "manda", "me envie", "envia", "quero sim"])) {
     return `Perfeito 😊
 
-Vou te passar o caminho:
+Vamos do jeito certo:
 
-1️⃣ Acesse a página do curso  
-2️⃣ Faça seu cadastro  
-3️⃣ Entre com seu login, se já tiver conta  
-4️⃣ Siga para o pagamento  
-5️⃣ Depois acesse a área do aluno  
+1️⃣ Primeiro, me conta qual é sua maior dúvida sobre currículo ou processo seletivo.
+2️⃣ Depois, explico como o curso pode ajudar na sua situação.
+3️⃣ Por fim, te passo o link com desconto para o acesso.
 
-Link:
-
-${linkCurso}
-
-Se der erro técnico, fale com Gustavo:
-
-👉 ${linkGustavo()} 
-
-Se houver qualquer outra dúvida podemos prosseguir por aqui mesmo, fico à sua disposição`;
+Se você já quiser ir direto, também posso mandar o link agora.`;
   }
 
   // =====================================================
@@ -1867,8 +1863,11 @@ async function maybeGetClaudeReply(messageText, user) {
 Você é um atendente comercial de WhatsApp.
 Responda em português do Brasil, curto, natural e objetivo.
 O cliente ainda não pagou o acesso.
-Ajude a concluir a compra ou tirar dúvidas.
-Evite mensagens longas.
+Primeiro, entenda a dúvida do cliente e responda com valor.
+Não ofereça o link imediatamente em todas as respostas.
+Se houver interesse, informe o link com desconto somente depois de mostrar por que o curso ajuda no caso dele.
+Se o cliente pedir diretamente o link, você pode enviar, mas explique primeiro o benefício.
+Se o cliente perguntar sobre desconto, deixe claro que há uma condição especial e que o link será enviado após mostrar o valor.
 
 Nome do cliente: ${user?.name || "Cliente"}
 Mensagem do cliente: ${messageText}
@@ -2180,7 +2179,7 @@ app.post("/api/chat/start", async (req, res) => {
 
     const resposta =
       respostaClaude ||
-      "Oi! Recebi sua mensagem. Posso te ajudar com pagamento, acesso ao curso ou dúvidas gerais.";
+      buildCustomerReply(mensagem, user);
 
     return res.json({
       success: true,
