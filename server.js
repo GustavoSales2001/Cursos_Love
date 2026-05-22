@@ -578,16 +578,40 @@ async function markWhatsappSent(userId) {
   );
 }
 
+// Rastreador de contexto de conversa por usuário
+const conversationContext = new Map();
+
+function getConversationStage(userId) {
+  if (!conversationContext.has(userId)) {
+    conversationContext.set(userId, {
+      theme: null,
+      stage: 0,
+      lastInteraction: Date.now()
+    });
+  }
+  return conversationContext.get(userId);
+}
+
+function updateConversationStage(userId, theme, stage) {
+  conversationContext.set(userId, {
+    theme,
+    stage,
+    lastInteraction: Date.now()
+  });
+}
+
 function buildCustomerReply(text = "", user = null) {
   const rawMsg = String(text || "");
   const msg = normalizeText(rawMsg);
+  const userId = user?.id || "anonymous";
 
   const linkCurso = "https://gustavosales2001.github.io/Cursos_Love/";
-  const whatsappMilene = "5511922198936"; // Especialista Milene - dúvidas sobre currículo, curso e orientação
-  const whatsappGustavo = "5511933128628"; // Gustavo Desenvolvedor - erro, acesso, login, bug e problemas técnicos
+  const whatsappMilene = "5511922198936";
+  const whatsappGustavo = "5511933128628";
 
   const nome = user?.name ? user.name.split(" ")[0] : "";
   const saudacao = nome ? `${nome}, ` : "";
+  const context = getConversationStage(userId);
 
   function normalizeText(value) {
     return String(value || "")
@@ -606,6 +630,145 @@ function buildCustomerReply(text = "", user = null) {
 
   function linkGustavo() {
     return `https://wa.me/${whatsappGustavo}`;
+  }
+
+  // Fluxo de respostas progressivas para cada tema
+  function handleThemeProgression(theme, keywords) {
+    if (!hasAny(msg, keywords)) return null;
+
+    updateConversationStage(userId, theme, context.stage + 1);
+
+    const responses = {
+      // Fluxo: Não recebe retorno
+      noRetorno: [
+        `${saudacao}Entendo. Isso é uma das situações mais comuns que vejo.
+
+Muitas pessoas têm experiência, mas o currículo não passa bem pelos filtros automáticos que as empresas usam.`,
+
+        `O problema geralmente não é a falta de qualificação. É que o currículo:
+- não tem as palavras-chave da vaga
+- está muito genérico
+- não destaca resultados
+- não é claro o suficiente para os sistemas lerem`,
+
+        `Você já tentou adaptar o currículo para cada vaga, ou manda a mesma versão para tudo?`,
+
+        `Porque quando você personaliza certos pontos, como objetivo, habilidades e palavras-chave, os sistemas conseguem entender melhor que você combina com aquela posição.
+
+O curso foi exatamente pensado para isso.`,
+
+        `Se você quiser entender melhor como funciona esse processo, posso te mostrar o caminho pelo link do curso. Lá você aprende a estruturar de forma estratégica.
+
+Quer acessar?`
+      ],
+
+      // Fluxo: Sobre o curso
+      sobreCurso: [
+        `${saudacao}O curso "Currículo que Vence a IA" foi pensado para pessoas que estão enviando currículo e não têm retorno, ou que querem uma abordagem mais estratégica.
+
+Muitas empresas usam filtros automáticos (IA, ATS, Gupy) que analisam currículos antes de um recrutador ver.`,
+
+        `O problema é que nem sempre ter experiência é suficiente. O currículo precisa estar organizado de um jeito que esses sistemas consigam ler bem.
+
+No curso você aprende exatamente isso.`,
+
+        `Você aprende:
+- como a IA analisa um currículo
+- como organizar suas informações
+- como usar palavras-chave da vaga
+- como evitar erros que eliminam seu currículo
+- como deixar tudo mais estratégico`,
+
+        `Tudo isso de forma prática, não é teoria pura. Você aprende e já começa a aplicar no seu currículo.`,
+
+        `Se quiser conhecer melhor, posso te mandar o link. Lá tem mais informações e você vê se faz sentido para o seu caso.
+
+Quer?`
+      ],
+
+      // Fluxo: Dúvida geral
+      duvida: [
+        `${saudacao}Claro, faz a pergunta com calma.
+
+Se for sobre currículo, vaga, IA, Gupy, LinkedIn ou processo seletivo, posso tentar te orientar.`,
+
+        `Me conta a sua dúvida específica que eu vejo melhor como posso ajudar.`,
+
+        null, // Aguarda resposta com a dúvida real
+        null,
+        null
+      ],
+
+      // Fluxo: Acesso / Link
+      acessar: [
+        `${saudacao}Antes de mandar o link, deixa eu entender melhor sua situação.
+
+Você quer acessar porque está buscando vaga agora, ou só quer explorar o curso?`,
+
+        `E qual é sua maior dúvida no momento? É sobre currículo mesmo, ou é sobre os filtros automáticos?`,
+
+        `Porque assim consigo te explicar melhor se o curso faz sentido para o seu caso neste momento.`,
+
+        `Depois disso, eu te passo o link com a melhor condição que temos disponível.`,
+
+        `Então, qual é a sua situação agora?`
+      ],
+
+      // Fluxo: Primeiro emprego / Sem experiência
+      primeiroEmprego: [
+        `${saudacao}Ótimo, dá sim para montar um currículo bem profissional mesmo sem experiência formal.
+
+O segredo é valorizar o que você já tem.`,
+
+        `Você pode destacar:
+- cursos
+- formação
+- projetos pessoais
+- habilidades
+- voluntariado
+- atividades informais`,
+
+        `O erro que muita gente comete é deixar o currículo muito vazio ou muito genérico, só porque acha que não tem experiência.
+
+Mas sim tem. Você só precisa apresentar melhor.`,
+
+        `É exatamente disso que o curso trata. Como organizar e destacar o que você tem de forma mais profissional.`,
+
+        `Se quiser conhecer, posso te mandar o acesso. O que acha?`
+      ],
+
+      // Fluxo: Mudança de área
+      mudancaArea: [
+        `${saudacao}Serve muito para transição de área.
+
+Nesse caso, o currículo precisa fazer uma ponte entre o que você já sabe e o que a nova área exige.`,
+
+        `O segredo é destacar as habilidades que transferem entre uma área e outra, além de cursos e projetos relevantes.`,
+
+        `Se o currículo ficar muito focado na área antiga, o recrutador pode não ver a sua mudança como natural.`,
+
+        `O curso te ensina exatamente como fazer essa transição parecer coerente e bem planejada.`,
+
+        `Você quer entender melhor como estruturar isso?`
+      ],
+
+      // Fluxo: Problema técnico
+      problema: [
+        `${saudacao}Entendi que está com um problema técnico.
+
+Deixa eu direcionar para a pessoa certa resolver isso mais rápido.`,
+
+        `O Gustavo é o desenvolvedor e consegue verificar erro de página, acesso, login, pagamento ou qualquer falha técnica.`,
+
+        `Se você conseguir enviar um print da tela onde está o problema, ele resolve muito mais rápido.`,
+
+        `Link do Gustavo: ${linkGustavo()}`,
+
+        null
+      ]
+    };
+
+    return responses[theme]?.[context.stage - 1] || null;
   }
 
   // =====================================================
