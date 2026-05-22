@@ -137,6 +137,15 @@
       cursor: not-allowed;
     }
 
+    /* Typing indicator (WhatsApp-like three dots) */
+    .typing { max-width: 50%; }
+    .typing-dots { display:inline-flex; gap:6px; align-items:center; }
+    .typing-dots span{display:block;width:8px;height:8px;background:#111827;border-radius:50%;opacity:0.12;transform:translateY(0);animation:typingDots 1s infinite}
+    .typing-dots span:nth-child(1){animation-delay:0s}
+    .typing-dots span:nth-child(2){animation-delay:0.12s}
+    .typing-dots span:nth-child(3){animation-delay:0.24s}
+    @keyframes typingDots{0%{opacity:0.18;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}100%{opacity:0.18;transform:translateY(0)}}
+
     @media (max-width: 480px) {
       .chat-box {
         right: 10px;
@@ -194,7 +203,19 @@
       div.textContent = text;
       chatMessages.appendChild(div);
       chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div;
     }
+
+    function createTypingIndicator() {
+      const div = document.createElement('div');
+      div.className = 'msg bot typing';
+      div.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div;
+    }
+
+    function delay(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
 
     chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -207,41 +228,47 @@
 
       if (!mensagem) return;
 
+      // add user message
       addMessage(mensagem, "user");
       mensagemEl.value = "";
       sendBtn.disabled = true;
       sendBtn.textContent = "Enviando...";
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/chat/start`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            nome,
-            email,
-            celular,
-            mensagem
-          })
-        });
+      // show typing indicator immediately
+      const typingEl = createTypingIndicator();
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          addMessage(data.error || "Erro ao falar com o servidor.", "bot");
-        } else {
-          addMessage(
-            data.reply || "Recebi sua mensagem. Como posso te ajudar?",
-            "bot"
-          );
+      // start api request but don't await yet — ensure minimum typing time
+      const apiPromise = (async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/chat/start`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, email, celular, mensagem })
+          });
+          const data = await response.json();
+          return { ok: response.ok, data };
+        } catch (err) {
+          return { ok: false, data: { error: 'Não consegui conectar ao servidor agora.' } };
         }
-      } catch (error) {
-        addMessage("Não consegui conectar ao servidor agora.", "bot");
-      } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Enviar";
+      })();
+
+      // wait at least 8 seconds (8000ms)
+      await delay(8000);
+
+      // now wait for API to complete if it hasn't yet
+      const result = await apiPromise;
+
+      // remove typing indicator and show final message
+      typingEl.remove();
+
+      if (!result.ok) {
+        addMessage(result.data.error || 'Erro ao falar com o servidor.', 'bot');
+      } else {
+        addMessage(result.data.reply || 'Recebi sua mensagem. Como posso te ajudar?', 'bot');
       }
+
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Enviar";
     });
   </script>
 </body>

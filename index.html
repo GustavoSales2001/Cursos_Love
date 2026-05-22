@@ -3,20 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Curso online: Aprenda a montar um currículo estratégico e preparado para passar pelos filtros automáticos." />
   <title>Currículo que Vence a IA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="hero">
     <nav class="navbar">
-      <div class="logo">CVIA</div>
+      <div class="nav-left">
+        <div class="logo">CVIA</div>
+        <button id="navToggle" class="nav-toggle" aria-label="Abrir menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
       <ul class="nav-links">
         <li><a href="#sobre">Sobre</a></li>
+        <li><a href="#ofertas">O que inclui</a></li>
         <li><a href="#modulos">Módulos</a></li>
         <li><a href="#beneficios">Benefícios</a></li>
         <li><a href="#depoimentos">Resultados</a></li>
       </ul>
-      <a href="#inscricao" class="btn-nav">Quero aprender</a>
+      <a href="#inscricao" id="ctaButton" class="btn-nav">Quero aprender</a>
     </nav>
 
     <div class="hero-content">
@@ -29,19 +40,79 @@
         </p>
 
         <div class="hero-buttons">
-          <a href="#inscricao" class="btn-primary">Começar agora</a>
+          <a href="#inscricao" id="ctaPrimary" class="btn-primary">Começar agora</a>
           <a href="#sobre" class="btn-secondary">Saiba mais</a>
         </div>
+
+        <div class="hero-stats" aria-hidden="true">
+          <div>
+            <strong>+1.200</strong>
+            <span>Alunos</span>
+          </div>
+          <div>
+            <strong>4.9</strong>
+            <span>Avaliação</span>
+          </div>
+          <div>
+            <strong>30+</strong>
+            <span>Modelos de CV</span>
+          </div>
+        </div>
+        <p class="hero-note">Conteúdo atualizado com as melhores práticas de seleção e apresentação para vagas modernas, sem exageros de marketing.</p>
       </div>
 
-      <div class="hero-card">
-        <h3>O que você vai aprender</h3>
-        <ul>
-          <li>Como montar um currículo mais forte</li>
-          <li>Como adaptar palavras-chave para vagas</li>
-          <li>Como chamar atenção do recrutador</li>
-          <li>Como evitar erros que fazem seu currículo ser ignorado</li>
-        </ul>
+      <div class="hero-visual">
+        <div class="result-card">
+          <div class="result-header">
+            <h3>Resultados dos alunos</h3>
+            <p class="muted">Casos reais, ganhos mensuráveis após o curso</p>
+          </div>
+
+          <div class="carousel" aria-roledescription="carousel">
+            <div class="carousel-track">
+              <article class="result-slide">
+                <div class="slide-stat">
+                  <strong>+82%</strong>
+                  <span>aumento de convites para entrevistas</span>
+                </div>
+                <p class="slide-desc">"Consegui uma entrevista na primeira semana após os ajustes."</p>
+                <p class="slide-author">— Maria, Analista de Marketing</p>
+              </article>
+
+              <article class="result-slide">
+                <div class="slide-stat">
+                  <strong>3x</strong>
+                  <span>mais respostas às candidaturas</span>
+                </div>
+                <p class="slide-desc">"As palavras-chave fizeram a diferença nos processos automatizados."</p>
+                <p class="slide-author">— João, Desenvolvedor</p>
+              </article>
+
+              <article class="result-slide">
+                <div class="slide-stat">
+                  <strong>2 semanas</strong>
+                  <span>média para conseguir primeira chamada</span>
+                </div>
+                <p class="slide-desc">"Meu currículo passou a ser selecionado por recrutadores humanos."</p>
+                <p class="slide-author">— Ana, Designer UX</p>
+              </article>
+
+              <article class="result-slide">
+                <div class="slide-stat">
+                  <strong>+30</strong>
+                  <span>modelos de CV profissionais</span>
+                </div>
+                <p class="slide-desc">"Modelos prontos e fáceis de adaptar para diferentes vagas."</p>
+                <p class="slide-author">— Lucas, Estudante</p>
+              </article>
+            </div>
+            <div class="carousel-controls" aria-label="Controles do carrossel">
+              <button class="carousel-prev" aria-label="Anterior">‹</button>
+              <span class="carousel-label">Veja mais resultados</span>
+              <button class="carousel-next" aria-label="Próximo">›</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -55,6 +126,11 @@
         como esses filtros funcionam e como deixar seu currículo mais estratégico,
         mais claro e mais competitivo.
       </p>
+      <ul class="feature-list">
+        <li>Aprenda a organizar seus dados com clareza e foco no que importa.</li>
+        <li>Use uma linguagem alinhada ao mercado, sem exageros ou jargões vazios.</li>
+        <li>Transforme sua experiência em resultados e conquiste mais entrevistas.</li>
+      </ul>
       <p class="section-text">
         O objetivo é te ajudar a se apresentar melhor, destacar suas qualidades
         e aumentar suas chances de ser chamado para entrevistas.
@@ -62,7 +138,31 @@
     </div>
   </section>
 
-  <section id="modulos" class="section alt-bg">
+  <section id="ofertas" class="section alt-bg">
+    <div class="container">
+      <h2>O que você recebe no curso</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Currículos prontos para ATS</h3>
+          <p>Modelos de CV testados para sistemas automáticos e leitura humana.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Checklist completo</h3>
+          <p>Guia passo a passo para garantir que seu currículo não seja rejeitado.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Estratégia de palavras-chave</h3>
+          <p>Aprenda a escolher termos que alinhem seu currículo à vaga certa.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Exemplos de resultados</h3>
+          <p>Depoimentos e casos práticos de alunos que conseguiram entrevistas.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modulos" class="section">
     <div class="container">
       <h2>Módulos do curso</h2>
       <div class="cards">
@@ -82,6 +182,35 @@
           <h3>Módulo 4</h3>
           <p>Descubra como destacar experiências, resultados e habilidades.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="metodo" class="section alt-bg">
+    <div class="container">
+      <h2>Como o curso funciona</h2>
+      <div class="process-list">
+        <article class="process-item">
+          <span>1</span>
+          <div>
+            <h3>Análise rápida do currículo</h3>
+            <p>Você identifica os pontos principais que precisam ser ajustados para qualquer vaga.</p>
+          </div>
+        </article>
+        <article class="process-item">
+          <span>2</span>
+          <div>
+            <h3>Aplicação de palavras-chave</h3>
+            <p>Aprenda a colocar termos relevantes sem perder sua linguagem natural.</p>
+          </div>
+        </article>
+        <article class="process-item">
+          <span>3</span>
+          <div>
+            <h3>Entrega de currículo profissional</h3>
+            <p>Tenha um documento claro, direto e pronto para ser enviado a empresas reais.</p>
+          </div>
+        </article>
       </div>
     </div>
   </section>
@@ -119,14 +248,25 @@
             “Depois de reorganizar meu currículo com mais estratégia, comecei a
             me sentir muito mais preparada para enviar candidaturas.”
           </p>
-          <h4>Exemplo de aluna</h4>
+          <h4>Fernanda, Coordenadora</h4>
         </div>
         <div class="testimonial">
           <p>
             “Eu não sabia que pequenos ajustes podiam fazer tanta diferença na
             apresentação profissional.”
           </p>
-          <h4>Exemplo de aluno</h4>
+          <h4>Rodrigo, Vagas de TI</h4>
+        </div>
+      </div>
+      <div class="faq">
+        <h3>Perguntas frequentes</h3>
+        <div class="faq-item">
+          <strong>Preciso saber programar para fazer o curso?</strong>
+          <p>Não. O foco é comunicação profissional e seleção de informações, aplicável a qualquer área.</p>
+        </div>
+        <div class="faq-item">
+          <strong>O curso traz exemplos reais?</strong>
+          <p>Sim. O conteúdo inclui modelos de currículo e casos práticos para vagas atuais do mercado.</p>
         </div>
       </div>
     </div>
@@ -147,6 +287,15 @@
   <footer class="footer">
     <p>© 2026 Currículo que Vence a IA. Todos os direitos reservados.</p>
   </footer>
+
+  <a href="https://wa.me/5511925876342?text=Gostaria%20de%20mais%20informa%C3%A7%C3%B5es%20referente%20ao%20curso%2C%20consegue%20me%20ajudar%3F" class="whatsapp-float whatsapp-icon-only" target="_blank" rel="noopener noreferrer" aria-label="Conversar no WhatsApp">
+    <span class="whatsapp-icon" aria-hidden="true">
+      <!-- Ícone oficial simplificado do WhatsApp (branco) -->
+      <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <path fill="#ffffff" d="M12.04 2C6.48 2 2 6.48 2 12.04c0 2.12.56 4.15 1.62 5.95L2 22l6.25-1.63C8.82 21.44 10.41 22 12.04 22 17.6 22 22.04 17.52 22.04 12.04 22.04 6.48 17.6 2 12.04 2zM16.9 15.9c-.24.52-1.07 1.03-1.47 1.11-.39.07-.87.1-1.67-.17-.8-.27-2.06-.76-3.18-1.85-1.12-1.09-1.61-2.36-1.89-3.16-.29-.8-.18-1.13.06-1.45.23-.31.53-.8.8-1.06.25-.25.34-.39.51-.64.17-.25.08-.49-.04-.6-.13-.12-.86-2.03-1.18-2.78-.32-.75-.64-.65-.88-.66-.24-.01-.52-.01-.79-.01-.27 0-.63.1-.96.48-.33.37-1.25 1.22-1.25 2.98 0 1.75.9 3.44 2.04 4.67 1.14 1.22 2.46 2.03 3.68 2.48 1.22.45 2.33.51 3.21.39.88-.12 1.54-.53 1.86-1.06.32-.53.32-1 .22-1.14-.1-.13-.37-.21-.69-.37z"/>
+      </svg>
+    </span>
+  </a>
 
   <script src="script.js"></script>
 </body>

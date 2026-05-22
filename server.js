@@ -2849,7 +2849,7 @@ ${linkCurso}
 
 Se preferir falar direto com nosso especialista, chama aqui:
 
-https://wa.me/55${contatoHumano}`
+https://wa.me/55${contatoHumano}` 
   ];
 
   return mensagens[followupCount] || null;  
