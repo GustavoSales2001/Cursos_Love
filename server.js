@@ -772,69 +772,77 @@ Deixa eu direcionar para a pessoa certa resolver isso mais rápido.`,
   }
 
   // =====================================================
+  // FLUXO PROGRESSIVO PRINCIPAL
+  // =====================================================
+  if (hasAny(msg, ["nao chamam", "não chamam", "nao tenho retorno", "não tenho retorno", "ninguem chama"])) {
+    const response = handleThemeProgression("noRetorno", ["nao chamam", "não chamam", "nao tenho retorno", "não tenho retorno"]);
+    if (response) return response;
+  }
+
+  if (hasAny(msg, ["como funciona", "funciona", "sobre o curso", "curso"])) {
+    const response = handleThemeProgression("sobreCurso", ["como funciona", "sobre o curso"]);
+    if (response) return response;
+  }
+
+  if (hasAny(msg, ["quero acessar", "onde acesso", "link", "acessar", "comprar", "pagina", "página"])) {
+    const response = handleThemeProgression("acessar", ["quero acessar", "onde acesso", "link", "acessar"]);
+    if (response) return response;
+  }
+
+  if (hasAny(msg, ["primeiro emprego", "sem experiencia", "sem experiência", "nunca trabalhei"])) {
+    const response = handleThemeProgression("primeiroEmprego", ["primeiro emprego", "sem experiencia", "sem experiência"]);
+    if (response) return response;
+  }
+
+  if (hasAny(msg, ["mudar de area", "mudar de área", "transicao", "transição", "trocar de area"])) {
+    const response = handleThemeProgression("mudancaArea", ["mudar de area", "mudar de área"]);
+    if (response) return response;
+  }
+
+  if (hasAny(msg, ["erro", "bug", "travou", "nao abre", "não abre", "pagina nao abre", "página não abre"])) {
+    const response = handleThemeProgression("problema", ["erro", "bug", "travou"]);
+    if (response) return response;
+  }
+
+  // =====================================================
   // 1. SAUDAÇÃO / INÍCIO DE CONVERSA
   // =====================================================
   if (hasAny(msg, ["oi", "ola", "olá", "bom dia", "boa tarde", "boa noite", "eai", "e aí", "opa"])) {
-    return `${saudacao}oi 😊
+    return `${saudacao}Oi! Tudo bem?
 
-Que bom que você chamou!
-
-Antes de te mandar qualquer coisa, me conta rapidinho: você quer entender melhor o curso ou está com alguma dúvida sobre currículo, vagas, IA, Gupy, LinkedIn ou processos seletivos?
-
-Pode falar tranquilo. A ideia aqui é te ajudar primeiro, sem pressa.`;
+Antes de falar sobre o curso, me conta: você está com dúvida sobre currículo, vaga ou acesso?`;
   }
 
   // =====================================================
   // 2. TUDO BEM / QUEBRA DE GELO
   // =====================================================
   if (hasAny(msg, ["tudo bem", "td bem", "como vai", "como voce esta", "como você está"])) {
-    return `Tudo certo por aqui 😊
+    return `Tudo certo por aqui.
 
-E com você?
-
-Me conta um pouco da sua situação: você já tem currículo pronto, está começando agora ou está mandando currículo e não recebendo retorno?
-
-Com isso consigo te orientar melhor.`;
+E você, como posso ajudar hoje?`;
   }
 
   // =====================================================
   // 3. DÚVIDA GERAL
   // =====================================================
   if (hasAny(msg, ["tenho duvida", "tenho dúvida", "duvida", "dúvida", "nao entendi", "não entendi", "pode explicar", "explica melhor"])) {
-    return `${saudacao}claro, pode perguntar 😊
-
-Se for dúvida sobre currículo, vaga, curso, IA, Gupy, LinkedIn ou como melhorar suas chances nos processos seletivos, posso te orientar por aqui.
-
-Me manda sua dúvida com calma que eu tento te ajudar da melhor forma.`;
+    return `${saudacao}Claro. Me conta sua dúvida específica sobre currículo, vaga ou processo seletivo e eu respondo direto.`;
   }
 
   // =====================================================
   // 4. SOBRE O CURSO / COMO FUNCIONA
   // =====================================================
   if (hasAny(msg, ["como funciona", "funciona", "me explica", "saber mais", "mais informacoes", "mais informações", "sobre o curso", "curso"])) {
-    return `Claro 😊
+    return `O curso é voltado para quem precisa melhorar o currículo para passar melhor por filtros automáticos e chegar nas entrevistas.
 
-O curso “Currículo que Vence a IA” foi criado para ajudar pessoas que estão enviando currículo e não conseguem retorno, ou que querem montar um currículo mais estratégico.
-
-Hoje muitas empresas usam filtros automáticos, como IA, ATS, Gupy e outros sistemas. Então não basta ter experiência: o currículo precisa estar organizado de um jeito que esses sistemas consigam ler e entender.
-
-No curso você aprende:
-
-✔ como a IA analisa um currículo  
-✔ como organizar suas experiências  
-✔ como usar palavras-chave da vaga  
-✔ como evitar erros que eliminam seu currículo  
-✔ como montar uma versão mais profissional  
-✔ como adaptar o currículo para diferentes vagas  
-
-Se você quiser, também posso te passar o link para acessar a página do curso.`;
+Antes de eu te mandar mais detalhes, me diz: qual parte você quer entender melhor? O conteúdo, o formato ou como aplicar no seu currículo?`;
   }
 
   // =====================================================
   // 5. IA / ATS / GUPY / ROBÔ
   // =====================================================
   if (hasAny(msg, ["ia", "ats", "gupy", "robo", "robô", "filtro", "sistema automatico", "sistema automático", "triagem automatica", "triagem automática"])) {
-    return `Boa pergunta 👀
+    return `Boa pergunta.
 
 Hoje muitas empresas usam sistemas automáticos para filtrar currículos antes do recrutador ver.
 
@@ -856,31 +864,14 @@ O curso te ensina a ajustar isso de forma prática, sem inventar informação e 
   // 6. PREÇO / VALOR / CUSTO
   // =====================================================
   if (hasAny(msg, ["preco", "preço", "valor", "quanto custa", "custa", "custo", "investimento"])) {
-    return `Antes de falar de preço, me conta qual é a sua maior dúvida hoje:
-
-✔ é sobre o currículo? 
-✔ é sobre filtros automáticos? 
-✔ é sobre não receber retorno das vagas?
-
-Assim eu te explico melhor se esse curso faz sentido para o seu caso e também te mostro uma condição especial no final.`;
+    return `Para falar de preço, primeiro me conta: qual o seu maior desafio hoje? É o currículo, a falta de retorno ou o entendimento de como as vagas filtram os candidatos?`;
   }
 
   // =====================================================
   // 7. LINK / ACESSAR / COMPRAR
   // =====================================================
   if (hasAny(msg, ["link", "acessar", "comprar", "quero comprar", "onde compro", "onde acesso", "pagina", "página"])) {
-    return `Claro 😊
-
-Você pode acessar por aqui quando estiver pronto:
-
-${linkCurso}
-
-Mas antes de seguir, me conta qual a sua maior dúvida:
-- é sobre currículo?
-- é sobre o processo seletivo?
-- é sobre o uso de palavras-chave?
-
-Assim eu te explico melhor e depois te passo o link com desconto, se você quiser.`;
+    return `Entendi. Antes de enviar o link, me conta qual a sua maior dúvida: currículo, processo seletivo ou conteúdo do curso? Assim eu posso te responder melhor.`;
   }
 
   // =====================================================
@@ -901,96 +892,57 @@ Assim posso te orientar melhor e te mostrar o caminho certo para aproveitar o de
   // 9. PAGAMENTO / PIX / CARTÃO / BOLETO
   // =====================================================
   if (hasAny(msg, ["pagamento", "pagar", "pix", "cartao", "cartão", "boleto", "mercado pago", "credito", "crédito", "debito", "débito"])) {
-    return `O pagamento é feito pela própria página do curso:
-
-${linkCurso}
-
-Você acessa, faz seu cadastro ou entra com login, e segue para a parte de pagamento.
-
-Se aparecer erro, tela travada, pagamento não carregar, problema de login ou qualquer falha técnica, fale direto com o Gustavo, desenvolvedor:
-
-👉 ${linkGustavo()}`;
+    return `O pagamento é feito na página do curso. Se precisar, posso te orientar sobre como chegar lá ou indicar quem pode te ajudar se aparecer algum erro.`;
   }
 
   // =====================================================
   // 10. ERRO / BUG / PROBLEMA TÉCNICO
   // =====================================================
   if (hasAny(msg, ["erro", "bug", "travou", "nao abre", "não abre", "pagina nao abre", "página não abre", "deu problema", "problema tecnico", "problema técnico", "falha", "carregando", "tela branca", "nao carrega", "não carrega"])) {
-    return `Entendi 👀
+    return `Parece ser um problema técnico. O Gustavo pode verificar o site, login, acesso ou pagamento.
 
-Isso parece ser algo técnico, então o melhor caminho é falar direto com o Gustavo, que é o desenvolvedor.
-
-Ele consegue verificar erro de página, acesso, login, pagamento travado ou qualquer problema técnico.
-
-👉 ${linkGustavo()}
-
-Se puder, mande também um print da tela e explique em qual parte travou. Isso ajuda ele a resolver mais rápido.`;
+Se puder, mande um print da tela e explique em qual parte travou.`;
   }
 
   // =====================================================
   // 11. LOGIN / SENHA / ACESSO / CADASTRO
   // =====================================================
   if (hasAny(msg, ["login", "senha", "cadastro", "entrar", "acesso", "area do aluno", "área do aluno", "nao consigo acessar", "não consigo acessar", "liberar acesso"])) {
-    return `Você acessa pela página:
+    return `Para acessar, entre no site do curso e use o seu login. Se ainda não tem conta, cadastre-se normalmente.
 
-${linkCurso}
-
-Se ainda não tiver conta, faça o cadastro.  
-Se já tiver conta, entre com seu login.
-
-Agora, se estiver dando erro, senha não funciona, acesso não libera, página trava ou aparece alguma mensagem estranha, fale com o Gustavo:
-
-👉 ${linkGustavo()}
-
-Ele é o responsável por resolver problemas técnicos e de acesso.`;
+Se der erro no login, acesso não liberar ou a página travar, posso te passar quem resolve isso.`;
   }
 
   // =====================================================
   // 12. MÓDULOS / AULAS / CONTEÚDO
   // =====================================================
   if (hasAny(msg, ["modulo", "módulo", "modulos", "módulos", "aula", "aulas", "conteudo", "conteúdo", "material", "materiais", "pdf", "checklist"])) {
-    return `O curso é organizado para ser direto e prático.
+    return `O curso é direto e prático. Ele mostra como:
+- a IA e os sistemas ATS analisam currículos
+- você organiza suas informações
+- você escreve experiências de forma estratégica
+- você usa palavras-chave da vaga
+- você evita erros que eliminam o currículo
 
-Você aprende sobre:
-
-1️⃣ como a IA e os sistemas ATS analisam currículos  
-2️⃣ como estruturar melhor suas informações  
-3️⃣ como escrever experiências de forma mais estratégica  
-4️⃣ como usar palavras-chave da vaga  
-5️⃣ como adaptar o currículo para cada oportunidade  
-6️⃣ como evitar erros comuns que atrapalham a triagem  
-7️⃣ como deixar o currículo mais claro para recrutadores  
-
-A ideia não é só “fazer um currículo bonito”, mas montar um currículo que comunique melhor seu valor.`;
+O objetivo é não só deixar o currículo mais bonito, mas mais eficiente.`;
   }
 
   // =====================================================
   // 13. PRIMEIRO EMPREGO / SEM EXPERIÊNCIA
   // =====================================================
   if (hasAny(msg, ["primeiro emprego", "sem experiencia", "sem experiência", "nunca trabalhei", "nao tenho experiencia", "não tenho experiência", "sem registro", "sem carteira assinada"])) {
-    return `Serve sim 😊
+    return `Mesmo sem experiência formal, dá para montar um currículo com mais força.
 
-Mesmo sem experiência formal, dá para montar um currículo mais forte.
+O importante é valorizar cursos, projetos, habilidades e tudo que mostra seu potencial.
 
-Você pode destacar:
-
-✔ cursos  
-✔ formação  
-✔ habilidades  
-✔ projetos pessoais  
-✔ trabalhos informais  
-✔ voluntariado  
-✔ objetivos profissionais  
-✔ disponibilidade e vontade de aprender  
-
-O erro de muita gente é deixar o currículo vazio ou muito genérico. O curso ajuda a organizar essas informações de um jeito mais profissional.`;
+Se quiser, posso te dizer o que vale mais destaque no seu caso.`;
   }
 
   // =====================================================
   // 14. ESTÁGIO / JOVEM APRENDIZ / FACULDADE
   // =====================================================
   if (hasAny(msg, ["estagio", "estágio", "jovem aprendiz", "aprendiz", "faculdade", "universidade", "estudante"])) {
-    return `Serve muito para estágio e jovem aprendiz 😊
+    return `Serve muito para estágio e jovem aprendiz.
 
 Nesses casos, o recrutador não espera uma experiência enorme. Ele procura potencial, organização, clareza e compatibilidade com a vaga.
 
@@ -1011,48 +963,27 @@ O curso te ajuda a transformar isso em um currículo mais apresentável e mais a
   // 15. JÁ TENHO CURRÍCULO PRONTO
   // =====================================================
   if (hasAny(msg, ["ja tenho curriculo", "já tenho currículo", "curriculo pronto", "currículo pronto", "meu curriculo", "meu currículo", "ja fiz curriculo", "já fiz currículo"])) {
-    return `Melhor ainda 😊
+    return `Se já tem currículo, o próximo passo é revisar com cuidado.
 
-Se você já tem currículo, o curso pode te ajudar a melhorar o que já existe.
-
-Muitas vezes o problema não é começar do zero, mas ajustar pontos como:
-
-✔ excesso de informação  
-✔ falta de palavras-chave  
-✔ experiências mal descritas  
-✔ objetivo muito genérico  
-✔ layout confuso  
-✔ informações que o sistema não lê bem  
-✔ currículo igual para todas as vagas  
-
-O curso te mostra como revisar com mais estratégia.`;
+Posso te dizer quais pontos costumam atrapalhar mais: palavras-chave, descrição de experiências e clareza geral.`;
   }
 
   // =====================================================
   // 16. NÃO RECEBE RETORNO / NÃO CHAMAM
   // =====================================================
   if (hasAny(msg, ["nao chamam", "não chamam", "nao tenho retorno", "não tenho retorno", "mando curriculo", "mando currículo", "envio curriculo", "envio currículo", "ninguem chama", "ninguém chama", "nunca me chamam"])) {
-    return `Entendo totalmente.
+    return `Isso é comum e não significa que você não tem valor.
 
-Isso é uma das situações mais comuns: a pessoa envia currículo para várias vagas e quase nunca recebe resposta.
+Muitas vezes o currículo não está claro para os filtros automáticos ou não fala a mesma linguagem da vaga.
 
-Nem sempre isso significa que você não tem capacidade. Muitas vezes o currículo:
-
-✔ não tem palavras-chave da vaga  
-✔ está genérico demais  
-✔ não mostra resultados  
-✔ está desorganizado  
-✔ não conversa com o cargo desejado  
-✔ não passa bem pelos filtros automáticos  
-
-O curso foi feito justamente para corrigir isso.`;
+Me conta: como você tem enviado o currículo?`;
   }
 
   // =====================================================
   // 17. MUDANÇA DE ÁREA / TRANSIÇÃO
   // =====================================================
   if (hasAny(msg, ["mudar de area", "mudar de área", "transicao", "transição", "trocar de area", "trocar de área", "nova area", "nova área", "migrar de area", "migrar de área"])) {
-    return `Serve muito para transição de área 😊
+    return `Serve muito para transição de área.
 
 Nesse caso, o currículo precisa fazer uma ponte entre o que você já sabe e o que a nova vaga exige.
 
@@ -1083,7 +1014,7 @@ Você pode assistir no seu ritmo e já começar a melhorar seu currículo confor
   // 19. CELULAR / COMPUTADOR
   // =====================================================
   if (hasAny(msg, ["celular", "computador", "notebook", "pc", "tablet", "assistir pelo celular", "da pra ver no celular", "dá pra ver no celular"])) {
-    return `Você pode acessar pelo celular ou computador 😊
+    return `Você pode acessar pelo celular ou computador.
 
 Para assistir às aulas, o celular já ajuda bastante.
 
@@ -1094,34 +1025,22 @@ Mas para editar o currículo com mais conforto, geralmente computador ou noteboo
   // 20. CERTIFICADO
   // =====================================================
   if (hasAny(msg, ["certificado", "certificacao", "certificação", "tem certificado", "recebo certificado"])) {
-    return `Boa pergunta 😊
+    return `A pergunta faz sentido.
 
-O foco principal do curso é te ajudar a melhorar seu currículo na prática e aumentar suas chances de passar melhor pelas triagens.
+O foco principal do curso é ajudar a melhorar seu currículo na prática e aumentar suas chances nas triagens.
 
-Sobre certificado e detalhes específicos da emissão, o ideal é confirmar direto com a especialista Milene:
-
-👉 ${linkMilene()}
-
-Ela consegue te passar a informação mais certinha.`;
+Se quiser, posso te dizer como confirmar as informações sobre certificado com a especialista.`;
   }
 
   // =====================================================
   // 21. CONFIANÇA / SEGURANÇA / GOLPE
   // =====================================================
   if (hasAny(msg, ["confiavel", "confiável", "golpe", "seguro", "seguranca", "segurança", "e seguro", "é seguro", "posso confiar"])) {
-    return `Entendo sua preocupação 😊
+    return `Entendo sua preocupação.
 
 É normal querer confirmar antes de acessar qualquer curso.
 
-O acesso é feito pela página oficial:
-
-${linkCurso}
-
-Lá você consegue ver as informações e seguir com o cadastro.
-
-Se aparecer erro técnico ou problema de acesso, fale com o Gustavo:
-
-👉 ${linkGustavo()}`;
+Se quiser, posso te explicar como identificar a página oficial e o que conferir antes de fazer o cadastro.`;
   }
 
   // =====================================================
@@ -1927,41 +1846,31 @@ Essas informações ajudam o recrutador a entender melhor sua experiência.`;
   // 69. ENTENDI / OK / CERTO
   // =====================================================
   if (hasAny(msg, ["entendi", "ok", "certo", "ta bom", "tá bom", "beleza", "blz"])) {
-    return `Perfeito 😊
+    return `Perfeito.
 
-Se quiser, posso te ajudar a entender o próximo passo.
+Se quiser, posso te ajudar com o próximo passo.
 
-Você está mais interessado em:
-1️⃣ melhorar um currículo que já tem  
-2️⃣ montar um currículo do zero  
-3️⃣ entender como passar pela IA/Gupy  
-4️⃣ acessar o curso`;
+Você quer:`;
   }
 
   // =====================================================
   // 70. SIM / QUERO / TENHO INTERESSE
   // =====================================================
   if (hasAny(msg, ["sim", "quero", "tenho interesse", "pode mandar", "manda", "me envie", "envia", "quero sim"])) {
-    return `Perfeito 😊
+    return `Ótimo.
 
-Vamos do jeito certo:
+Me conta qual é a sua maior dúvida: currículo, vaga ou processo seletivo?
 
-1️⃣ Primeiro, me conta qual é sua maior dúvida sobre currículo ou processo seletivo.
-2️⃣ Depois, explico como o curso pode ajudar na sua situação.
-3️⃣ Por fim, te passo o link com desconto para o acesso.
-
-Se você já quiser ir direto, também posso mandar o link agora.`;
+Assim eu respondo de forma mais clara antes de falar de acesso.`;
   }
 
   // =====================================================
   // 71. NÃO / NÃO QUERO
   // =====================================================
   if (hasAny(msg, ["nao quero", "não quero", "nao tenho interesse", "não tenho interesse"])) {
-    return `Tudo bem 😊
+    return `Tudo bem.
 
-Sem problema nenhum.
-
-Se sua dúvida for só sobre currículo, vaga ou como melhorar suas chances, posso tentar te orientar por aqui mesmo.`;
+Se sua dúvida for sobre currículo, vaga ou processo seletivo, posso tentar te orientar por aqui mesmo.`;
   }
 
   // =====================================================
@@ -1985,18 +1894,16 @@ Assim você fala com a pessoa certa e resolve mais rápido.`;
   // 73. OBRIGADO
   // =====================================================
   if (hasAny(msg, ["obrigado", "obrigada", "valeu", "vlw", "agradeco", "agradeço"])) {
-    return `Imagina 😊
+    return `Por nada.
 
-Fico feliz em ajudar.
-
-Se surgir qualquer dúvida sobre currículo, vaga, curso ou acesso, pode chamar.`;
+Se tiver qualquer dúvida sobre currículo, vaga, curso ou acesso, pode chamar.`;
   }
 
   // =====================================================
   // 74. CLIENTE CONFUSO / MENSAGEM CURTA
   // =====================================================
   if (rawMsg.trim().length <= 3) {
-    return `${saudacao}me fala um pouquinho melhor o que você precisa 😊
+    return `${saudacao}me fala um pouco melhor o que você precisa.
 
 Você quer ajuda com currículo, acesso ao curso ou está com algum problema técnico?`;
   }
@@ -2004,13 +1911,13 @@ Você quer ajuda com currículo, acesso ao curso ou está com algum problema té
   // =====================================================
   // 75. RESPOSTA PADRÃO INTELIGENTE
   // =====================================================
-  return `${saudacao}entendi 😊
+  return `${saudacao}entendi.
 
 Para eu te ajudar melhor, me conta um pouco mais sobre sua dúvida.
 
-Se for sobre currículo, vaga, IA, Gupy, LinkedIn ou se o curso serve para o seu caso, posso tentar te orientar por aqui.
+Se for sobre currículo, vaga, IA, Gupy, LinkedIn ou se o curso serve para o seu caso, posso te orientar por aqui.
 
-Se for erro, problema de acesso, login, pagamento travado ou página com falha, me avisa que eu te direciono para o suporte certo.`;
+Se for erro técnico, acesso, login, pagamento travado ou página com falha, me avisa que eu te direciono para o suporte certo.`;
 
 }
 
@@ -3005,13 +2912,9 @@ function getFollowupMessage(followupCount) {
 
     `Última mensagem por aqui...
 
-Se quiser garantir o acesso com desconto, é só entrar no link:
+Se você ainda estiver com alguma dúvida, posso explicar como funciona o curso ou para onde ir no site.
 
-${linkCurso}
-
-Se preferir falar direto com nosso especialista, chama aqui:
-
-https://wa.me/55${contatoHumano}` 
+Se quiser, também posso conectar você com o especialista.` 
   ];
 
   return mensagens[followupCount] || null;  
