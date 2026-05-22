@@ -6,6 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const toast = document.getElementById('toast');
   const ctaMessage = document.getElementById('ctaMessage');
 
+  // Social Carousel infinite loop
+  const socialTrack = document.querySelector('.social-carousel-track');
+  if (socialTrack && socialTrack.children.length > 0) {
+    const cards = Array.from(socialTrack.children);
+    cards.forEach((card) => {
+      const clone = card.cloneNode(true);
+      socialTrack.appendChild(clone);
+    });
+  }
+
   if (navToggle && navLinks) {
     navToggle.addEventListener('click', () => {
       const isOpen = !navLinks.classList.contains('show');

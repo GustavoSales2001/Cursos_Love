@@ -31,8 +31,11 @@
     </nav>
 
     <div class="hero-topbar">
-      <span class="hero-pill">Oferta limitada</span>
-      <p>Primeiros inscritos recebem checklist de currículo e bônus de apresentação.</p>
+      <div class="offer-animation">
+        <span class="offer-badge">⚡ Oferta Limitada</span>
+        <p class="offer-text">Primeiros inscritos recebem checklist + bônus de apresentação profissional</p>
+      </div>
+      <a href="#inscricao" class="offer-cta">Acessar agora</a>
     </div>
 
     <div class="hero-content">
@@ -134,22 +137,30 @@
   <section class="section alt-bg social-proof">
     <div class="container">
       <h2>Quem já melhorou o currículo</h2>
-      <div class="social-grid">
-        <div class="social-card">
-          <strong>+1.200</strong>
-          <span>Alunos que já passaram pelo curso</span>
-        </div>
-        <div class="social-card">
-          <strong>4,9</strong>
-          <span>Avaliação média dos alunos</span>
-        </div>
-        <div class="social-card">
-          <strong>30+</strong>
-          <span>Modelos de currículo disponíveis</span>
-        </div>
-        <div class="social-card">
-          <strong>83%</strong>
-          <span>Mais convites para entrevistas</span>
+      <div class="social-carousel-wrapper">
+        <div class="social-carousel" aria-roledescription="carousel">
+          <div class="social-carousel-track">
+            <div class="social-card">
+              <strong>+1.200</strong>
+              <span>Alunos que já passaram pelo curso</span>
+            </div>
+            <div class="social-card">
+              <strong>4,9</strong>
+              <span>Avaliação média dos alunos</span>
+            </div>
+            <div class="social-card">
+              <strong>30+</strong>
+              <span>Modelos de currículo disponíveis</span>
+            </div>
+            <div class="social-card">
+              <strong>83%</strong>
+              <span>Mais convites para entrevistas</span>
+            </div>
+            <div class="social-card">
+              <strong>2 semanas</strong>
+              <span>Tempo médio para primeira chamada</span>
+            </div>
+          </div>
         </div>
       </div>
       <p class="section-text">Um currículo mais estratégico gera mais confiança. Por isso o curso combina teoria prática, exemplos reais e fórmulas fáceis para melhorar sua apresentação profissional.</p>
@@ -331,15 +342,16 @@
     <p>© 2026 Currículo que Vence a IA. Todos os direitos reservados.</p>
   </footer>
 
-  <a href="https://wa.me/5511925876342?text=Gostaria%20de%20mais%20informa%C3%A7%C3%B5es%20referente%20ao%20curso%2C%20consegue%20me%20ajudar%3F" class="whatsapp-float whatsapp-icon-only" target="_blank" rel="noopener noreferrer" aria-label="Conversar no WhatsApp">
+  <a href="https://wa.me/5511925876342?text=Gostaria%20de%20mais%20informa%C3%A7%C3%B5es%20referente%20ao%20curso%2C%20consegue%20me%20ajudar%3F" class="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="Falar no WhatsApp">
     <span class="whatsapp-icon" aria-hidden="true">
       <!-- Ícone oficial simplificado do WhatsApp (branco) -->
       <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
         <path fill="#ffffff" d="M12.04 2C6.48 2 2 6.48 2 12.04c0 2.12.56 4.15 1.62 5.95L2 22l6.25-1.63C8.82 21.44 10.41 22 12.04 22 17.6 22 22.04 17.52 22.04 12.04 22.04 6.48 17.6 2 12.04 2zM16.9 15.9c-.24.52-1.07 1.03-1.47 1.11-.39.07-.87.1-1.67-.17-.8-.27-2.06-.76-3.18-1.85-1.12-1.09-1.61-2.36-1.89-3.16-.29-.8-.18-1.13.06-1.45.23-.31.53-.8.8-1.06.25-.25.34-.39.51-.64.17-.25.08-.49-.04-.6-.13-.12-.86-2.03-1.18-2.78-.32-.75-.64-.65-.88-.66-.24-.01-.52-.01-.79-.01-.27 0-.63.1-.96.48-.33.37-1.25 1.22-1.25 2.98 0 1.75.9 3.44 2.04 4.67 1.14 1.22 2.46 2.03 3.68 2.48 1.22.45 2.33.51 3.21.39.88-.12 1.54-.53 1.86-1.06.32-.53.32-1 .22-1.14-.1-.13-.37-.21-.69-.37z"/>
       </svg>
     </span>
-    <span class="whatsapp-badge">Oferta</span>
   </a>
+
+  <div class="whatsapp-tooltip" aria-hidden="true">Falar no WhatsApp</div>
 
   <div class="mobile-fixed-cta">
     <a href="https://wa.me/5511925876342?text=Gostaria%20de%20mais%20informa%C3%A7%C3%B5es%20referente%20ao%20curso%2C%20consegue%20me%20ajudar%3F" class="btn-secondary" target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
