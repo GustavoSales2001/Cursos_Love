@@ -8,10 +8,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (navToggle && navLinks) {
     navToggle.addEventListener('click', () => {
+      const isOpen = !navLinks.classList.contains('show');
       navLinks.classList.toggle('show');
       navToggle.classList.toggle('open');
+      navToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    navLinks.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (navLinks.classList.contains('show')) {
+          navLinks.classList.remove('show');
+          navToggle.classList.remove('open');
+        }
+      });
     });
   }
+
+  const faqToggles = document.querySelectorAll('.faq-toggle');
+  faqToggles.forEach((toggle) => {
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.addEventListener('click', () => {
+      const item = toggle.closest('.faq-item');
+      if (!item) return;
+      const isOpen = item.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  });
 
   function showToast(msg = 'Ação realizada', ms = 3800) {
     if (!toast) return;
@@ -24,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctaButton.addEventListener('click', (e) => {
       e.preventDefault();
       showToast('Obrigado! Redirecionando para cadastro...');
+      if (ctaMessage) ctaMessage.textContent = 'Finalize sua inscrição e comece agora mesmo.';
       setTimeout(() => { window.location = 'login.html'; }, 900);
     });
   }
@@ -32,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctaPrimary.addEventListener('click', (e) => {
       e.preventDefault();
       showToast('Preparando o acesso ao curso...');
+      if (ctaMessage) ctaMessage.textContent = 'Redirecionando para sua área de inscrição…';
       setTimeout(() => { window.location = 'login.html'; }, 900);
     });
   }
