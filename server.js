@@ -1921,27 +1921,392 @@ Se for erro técnico, acesso, login, pagamento travado ou página com falha, me 
 
 }
 
+async function getConversationHistory(userId, limit = 10) {
+  if (!userId) return [];
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT direction, message_text, created_at
+      FROM whatsapp_messages
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ?
+      `,
+      [userId, limit]
+    );
+
+    return rows.reverse(); // Mais antigos primeiro
+  } catch (error) {
+    console.error("Erro ao recuperar histórico:", error.message);
+    return [];
+  }
+}
+
+function buildMessageHistory(conversationHistory, currentMessage) {
+  const messages = [];
+
+  // Adicionar histórico da conversa
+  for (const msg of conversationHistory) {
+    messages.push({
+      role: msg.direction === "in" ? "user" : "assistant",
+      content: msg.message_text || ""
+    });
+  }
+
+  // Adicionar mensagem atual
+  messages.push({
+    role: "user",
+    content: currentMessage
+  });
+
+  return messages;
+}
+
+// Detectar o caminho da conversa baseado no histórico
+function detectConversationPath(history) {
+  const allMessages = history.map(msg => msg.message_text?.toLowerCase() || "").join(" ");
+  
+  const contentKeywords = ["conteúdo", "aula", "módulo", "aprendo", "ensina", "tópico", "tema", "currículo", "programa", "matéria", "material", "aprend"];
+  const paymentKeywords = ["pagar", "pagamento", "preço", "valor", "caro", "desconto", "promoção", "boleto", "cartão", "débito", "crédito", "investiment", "grana", "quanto"];
+  const accessKeywords = ["acesso", "entrar", "login", "senha", "usuário", "plataforma", "problema", "não consigo", "travou", "conta", "cadastr"];
+  const technicalKeywords = ["erro", "bug", "não funciona", "quebrou", "problema técnico", "falha", "travou", "tela branca", "não aparec"];
+
+  const contentScore = contentKeywords.filter(kw => allMessages.includes(kw)).length;
+  const paymentScore = paymentKeywords.filter(kw => allMessages.includes(kw)).length;
+  const accessScore = accessKeywords.filter(kw => allMessages.includes(kw)).length;
+  const technicalScore = technicalKeywords.filter(kw => allMessages.includes(kw)).length;
+
+  const scores = { content: contentScore, payment: paymentScore, access: accessScore, technical: technicalScore };
+  const maxScore = Math.max(...Object.values(scores));
+
+  if (maxScore === 0) return "general";
+  return Object.keys(scores).find(key => scores[key] === maxScore);
+}
+
+// Pool de perguntas variadas por caminho
+function getFollowUpQuestion(path, conversationTurns = 0) {
+  const paths = {
+    content: [
+      "E qual é a sua principal necessidade: melhorar o currículo para passar em entrevistas, ou aplicar na prática?",
+      "Qual é a sua maior dificuldade no momento: saber o que incluir, estruturar as informações, ou adaptar para diferentes vagas?",
+      "Você quer focar em qual parte: fazer o conteúdo ficar mais atrativo aos recrutadores, ou entender a estrutura certa?",
+      "Qual é o seu maior desafio agora: saber o que incluir no currículo ou como apresentar de forma profissional?",
+      "O que te preocupa mais: deixar importantes informações de fora ou não saber como organizá-las visualmente?",
+      "Quer aprender a adaptar o currículo para diferentes posições? É isso que está faltando?"
+    ],
+    payment: [
+      "Qual é a sua maior preocupação: o valor total, as formas de pagamento, ou questões de segurança da transação?",
+      "Quer saber mais sobre como funciona o acesso? Ou você tem dúvida com qual forma de pagamento escolher?",
+      "Entendi sua preocupação com o investimento. Você quer saber qual é o retorno que vai ter?",
+      "O que ajudaria mais nesse momento: saber exatamente o que você ganha com o acesso ou tirar dúvidas técnicas?",
+      "Posso explicar melhor as formas de pagamento disponíveis ou você quer um desconto especial?",
+      "Você quer parcelar ou prefere à vista? A gente pode encontrar uma forma que cabe no seu bolso."
+    ],
+    access: [
+      "Quando você tentou acessar, qual foi exatamente a mensagem de erro? Consegue me mandar um print?",
+      "A dificuldade é para entrar na plataforma ou para visualizar os conteúdos após o login?",
+      "Você conseguiu fazer o cadastro normalmente, ou o problema começou desde o começo?",
+      "Já tentou acessar de outro navegador ou dispositivo? Às vezes resolve na hora!",
+      "Qual é o navegador que você está usando no momento? Chrome, Firefox, Safari?",
+      "Qual dispositivo você está tentando usar: computador, tablet ou celular?"
+    ],
+    technical: [
+      "Que tipo de erro está aparecendo na sua tela? Se conseguir um print, ajuda demais!",
+      "Qual página ou recurso está com problema: vídeos, PDFs, exercícios, ou a plataforma inteira?",
+      "Já tentou limpar o cache do navegador? Às vezes é só isso que resolve!",
+      "Qual dispositivo você está usando: computador, tablet ou celular?",
+      "Esse problema apareceu desde o começo ou começou agora de repente?",
+      "Qual é o seu sistema operacional: Windows, Mac ou Linux?"
+    ],
+    general: [
+      "O que você gostaria de saber primeiro: como funciona o curso, o que está incluso, ou como é o acesso?",
+      "Qual é sua maior dúvida agora: sobre o conteúdo que você aprende, como pagamento funciona, ou acesso?",
+      "Quer que eu explique tudo desde o começo ou você tem uma dúvida específica?",
+      "O que te traz por aqui? Você está buscando melhorar o currículo, conseguir mais entrevistas, ou os dois?",
+      "Como posso te ajudar melhor: mostrando o que você ganha com o curso ou respondendo dúvidas técnicas?",
+      "Se eu resolvesse uma dúvida agora, qual seria a mais importante pra você?"
+    ]
+  };
+
+  const questions = paths[path] || paths.general;
+  // Variar baseado no número de turnos para não repetir
+  const index = conversationTurns % questions.length;
+  return questions[index];
+}
+
+// Contar turnos de conversa do cliente (quantas vezes ele mandou mensagem)
+function countConversationTurns(history) {
+  return history.filter(msg => msg.direction === "in").length;
+}
+
+// Detectar confirmações e respostas simples
+function isConfirmation(messageText) {
+  const text = messageText.toLowerCase().trim();
+  const confirmations = ["sim", "s", "ok", "tudo bem", "tá bom", "blz", "valeu", "entendi", "certo", "perfeito", "ótimo", "legal", "show", "top", "massa", "👍", "✅"];
+  return confirmations.some(c => text.includes(c) || text === c);
+}
+
+// Detectar quantas vezes falam sobre o mesmo tópico
+function countTopicMentions(history, topic) {
+  const keywords = {
+    content: ["conteúdo", "aula", "módulo", "aprendo", "ensina", "tópico"],
+    payment: ["preço", "valor", "quanto", "custa", "desconto"],
+    access: ["acesso", "entrar", "login", "senha"],
+    technical: ["erro", "bug", "não funciona", "problema"]
+  };
+  
+  const topicKeywords = keywords[topic] || [];
+  let count = 0;
+  
+  for (const msg of history) {
+    if (msg.direction === "in") {
+      const text = msg.message_text?.toLowerCase() || "";
+      if (topicKeywords.some(kw => text.includes(kw))) {
+        count++;
+      }
+    }
+  }
+  
+  return count;
+}
+
+// Detectar o estágio da conversa (para evoluir o funil)
+function detectConversationStage(history, conversationPath) {
+  const userMessages = history.filter(msg => msg.direction === "in").length;
+  
+  // Estágios:
+  // 1. Awareness: Cliente está conhecendo (0-2 mensagens)
+  // 2. Interest: Cliente mostrou interesse (3-5 mensagens)
+  // 3. Decision: Cliente está pronto para decidir (6+ mensagens)
+  // 4. Objection: Cliente tem objeção (múltiplas perguntas sobre mesmo tema)
+  
+  if (userMessages <= 2) return "awareness";
+  if (userMessages <= 5) return "interest";
+  if (userMessages <= 8) return "decision";
+  return "objection";
+}
+
+// Respostas para mover para próximo estágio
+function getStageProgression(stage, conversationPath, mentionsCount) {
+  const responses = {
+    awareness: {
+      content: "Já que você perguntou sobre conteúdo, vou ser bem direto: o curso não é só teoria. É prático mesmo. Você já tem um currículo pronto ou quer começar do zero?",
+      payment: "Entendi sua preocupação. Deixa eu ser transparente: o investimento é pequeno comparado ao retorno. A maioria recupera em UMA entrevista a mais que consegue! Quer saber exatamente como?",
+      access: "Tranquilo, o acesso é automático! Logo após o pagamento você já tem tudo liberado. Que tal começarmos pelo essencial então?",
+      general: "Entendi sua dúvida. Deixa eu organizar melhor para você: o curso tem 3 pilares principais. Qual te interessa mais?"
+    },
+    interest: {
+      content: "Perfeito! Então você quer isso mesmo. Muita gente não sabe, mas a maioria dos currículos que recebem não passam nem em filtro automático. Você quer aprender a fugir dessa?",
+      payment: "Vejo que realmente quer investir. Que bom! Deixa eu te mostrar um último detalhe que faz toda diferença...",
+      access: "Ótimo! Já que entendeu como funciona, quer começar agora mesmo? Tenho um cupom especial que expira em 24h.",
+      general: "Ótimo! Vejo que você tá levando a sério. Vamos pro próximo passo?"
+    },
+    decision: {
+      content: "Você já tem tudo que precisa saber! Só falta você tomar a ação. Tá pronto para começar, ou tem aquele último detalhe que te falta?",
+      payment: "Você tá 100% pronto. Só falta esse último passo. Qual forma de pagamento funciona melhor com você agora?",
+      access: "Perfeito! Você já entendeu tudo. Agora é só começar. Tá pronto?",
+      general: "Você tá bem perto de tomar essa decisão! Que tal a gente conversar com o especialista para ele te colocar no caminho certo?"
+    },
+    objection: {
+      content: mentionsCount >= 3 ? "Vejo que você tem muita curiosidade! 🤓 Que tal a gente agendar uma call com o especialista? Ele pode responder TUDO que você quer saber com muito mais detalhe. Quer?" : "Ótima pergunta! Deixa eu responder com mais clareza...",
+      payment: mentionsCount >= 3 ? "Entendo perfeitamente sua preocupação com investimento. Sabe o que? Vou te passar o contato do especialista. Ele consegue estruturar uma forma que caiba no seu bolso. Topa?" : "Ótima observação. Deixa eu detalhar melhor...",
+      access: mentionsCount >= 2 ? "Seu navegador pode ser o problema. Melhor o especialista ajudar direto. Quer que eu passe o WhatsApp dele?" : "Deixa eu tentar resolver isso com você...",
+      technical: "Vamos passar isso pro especialista! Ele resolve rápido. Quer?",
+      general: "Vejo que você tem bastantes dúvidas, e isso é bom! Melhor você conversar direto com o especialista que conhece tudo. Topa?"
+    }
+  };
+  
+  return responses[stage]?.[conversationPath] || responses.interest.general;
+}
+
+// Função para ofercer o especialista
+function shouldOfferSpecialist(history, conversationPath) {
+  const userMessages = history.filter(msg => msg.direction === "in").length;
+  const topicMentions = countTopicMentions(history, conversationPath);
+  const stage = detectConversationStage(history, conversationPath);
+  
+  // Oferecer especialista se:
+  // 1. Cliente perguntou mais de 2 vezes sobre o mesmo tópico
+  // 2. Já teve mais de 6 turnos
+  // 3. Está na fase de objeção
+  
+  return stage === "objection" && topicMentions >= 2;
+}
+
+// Detectar o tipo específico de pergunta
+function detectQuestionType(messageText) {
+  const text = messageText.toLowerCase();
+
+  // PERGUNTAS SOBRE PREÇO
+  const priceKeywords = ["preço", "valor", "quanto", "custa", "caro", "desconto", "promoção", "pagar", "pagamento", "investimento", "grana", "boleto", "cartão"];
+  if (priceKeywords.some(kw => text.includes(kw))) {
+    return "price";
+  }
+
+  // PERGUNTAS SOBRE CONTEÚDO
+  const contentKeywords = ["o que aprend", "qual conteúdo", "qual aula", "qual módulo", "ensina", "tópico", "matéria", "programa", "currículo", "estrutura", "como funciona o curso"];
+  if (contentKeywords.some(kw => text.includes(kw))) {
+    return "content";
+  }
+
+  // PERGUNTAS SOBRE ACESSO/LOGIN
+  const accessKeywords = ["como acessar", "como entrar", "login", "senha", "usuário", "cadastr", "plataforma", "entrar no site"];
+  if (accessKeywords.some(kw => text.includes(kw))) {
+    return "access";
+  }
+
+  // PERGUNTAS TÉCNICAS
+  const technicalKeywords = ["erro", "bug", "não funciona", "quebrou", "travou", "não consigo", "problema", "falha", "tela branca"];
+  if (technicalKeywords.some(kw => text.includes(kw))) {
+    return "technical";
+  }
+
+  // PERGUNTAS SOBRE VIABILIDADE
+  const viabilityKeywords = ["vale a pena", "serve pra", "funciona pra", "vai me ajud", "vai mudar", "resultado", "funciona mesmo", "é bom", "é legal"];
+  if (viabilityKeywords.some(kw => text.includes(kw))) {
+    return "viability";
+  }
+
+  return "general";
+}
+
+// Respostas direcionadas por tipo de pergunta
+function getDirectAnswer(questionType, user) {
+  const linkCurso = "https://gustavosales2001.github.io/Cursos_Love/";
+  
+  const answers = {
+    price: {
+      response: `Ótimo, vou ser bem honesto com você! 💰
+
+O investimento é bem acessível (a gente tem promoção especial agora). As formas de pagamento incluem cartão parcelado, PIX ou transferência.
+
+E o detalhe? O valor sai barato quando você vê o ROI - clientes nossos conseguem aumentar em até 40% suas chances de passar em entrevistas após aplicar o que aprendem aqui.`,
+      followUp: "Qual forma de pagamento você prefere: à vista com desconto ou parcelado?"
+    },
+    content: {
+      response: `Perfeito, deixa eu te contar! 📚
+
+O curso é estruturado em módulos práticos:
+✅ Como estruturar um currículo que chama atenção
+✅ Técnicas para passar em filtros automáticos (ATS)
+✅ Como evidenciar suas melhores qualidades
+✅ Casos reais de sucesso e adaptação
+
+Tudo é prático, não é blá blá blá teórico. Você sai com um currículo pronto pra usar.`,
+      followUp: "Qual parte mais te interessa: estrutura do currículo, passar em ATS, ou mostrar seus diferenciais?"
+    },
+    access: {
+      response: `Tranquilo, é bem simples! 🔓
+
+Depois que você paga, recebe um email com:
+1. Link pra entrar na plataforma
+2. Seu usuário e senha
+3. Acesso imediato a todos os módulos
+4. Suporte 24/7 por WhatsApp (esse aqui mesmo!)`,
+      followUp: "Quer testar o acesso agora ou tem mais alguma dúvida antes de começar?"
+    },
+    technical: {
+      response: `Entendi, vamos resolver isso! 🔧
+
+Me ajuda com algumas infos:
+- Qual navegador você tá usando?
+- Desktop, tablet ou celular?
+- Qual é a mensagem de erro que aparece?`,
+      followUp: "Consegue me passar essas informações? Assim resolvo rápido!"
+    },
+    viability: {
+      response: `Funciona demais! 🎯
+
+A maioria dos clientes que fez o curso:
+✅ Passou a receber mais entrevistas
+✅ Conseguiu aquela vaga que queria
+✅ Aumentou as chances de recrutador ver seu perfil
+
+Mas o mais importante: você aprende o método. Então funciona de verdade pra qualquer situação.`,
+      followUp: "Você quer melhorar pra qual objetivo específico: conseguir mais entrevistas ou passar em processo seletivo?"
+    },
+    general: {
+      response: null, // Deixar Claude responder
+      followUp: null
+    }
+  };
+
+  return answers[questionType] || answers.general;
+}
+
+// Contar turnos de conversa do cliente (quantas vezes ele mandou mensagem)
 async function maybeGetClaudeReply(messageText, user) {
   const claudeKey = cleanEnv(process.env.CLAUDE_API_KEY);
+  const specialistPhone = "5511933128628";
 
   if (!claudeKey || claudeKey === "sua_chave_real") {
     return null;
   }
 
   try {
-    const prompt = `
-Você é um atendente comercial de WhatsApp.
-Responda em português do Brasil, curto, natural e objetivo.
-O cliente ainda não pagou o acesso.
-Primeiro, entenda a dúvida do cliente e responda com valor.
-Não ofereça o link imediatamente em todas as respostas.
-Se houver interesse, informe o link com desconto somente depois de mostrar por que o curso ajuda no caso dele.
-Se o cliente pedir diretamente o link, você pode enviar, mas explique primeiro o benefício.
-Se o cliente perguntar sobre desconto, deixe claro que há uma condição especial e que o link será enviado após mostrar o valor.
+    // Recuperar histórico da conversa
+    const history = user?.id ? await getConversationHistory(user.id) : [];
+    
+    // PASSO 1: Detectar que tipo de pergunta o cliente fez
+    const questionType = detectQuestionType(messageText);
+    
+    // PASSO 2: Detectar se é confirmação
+    const isConfirmationMsg = isConfirmation(messageText);
+    
+    // PASSO 3: Detectar estágio da conversa
+    const conversationPath = detectConversationPath(history);
+    const stage = detectConversationStage(history, conversationPath);
+    const topicMentions = countTopicMentions(history, conversationPath);
+    
+    // PASSO 4: Verificar se deve oferecer especialista
+    const shouldOffer = shouldOfferSpecialist(history, conversationPath);
+    
+    if (shouldOffer) {
+      // Cliente perguntou demais sobre o mesmo tópico → oferecer especialista
+      return `Vejo que você tem várias dúvidas sobre isso, e isso é ótimo! 🤓
 
-Nome do cliente: ${user?.name || "Cliente"}
-Mensagem do cliente: ${messageText}
-    `.trim();
+Melhor conversar direto com o especialista que pode responder TUDO com muito mais detalhe. Ele consegue estruturar a melhor forma pra você.
+
+Quer que eu passe o WhatsApp dele? É: ${specialistPhone} 
+
+Ele tá disponível pra conversar e tirar todas as suas dúvidas! 🚀`;
+    }
+    
+    // PASSO 5: Se for confirmação, evoluir a conversa
+    if (isConfirmationMsg && history.length > 0) {
+      const progressionResponse = getStageProgression(stage, conversationPath, topicMentions);
+      
+      if (progressionResponse) {
+        return progressionResponse;
+      }
+    }
+    
+    // PASSO 6: Tentar responder diretamente
+    const directAnswer = getDirectAnswer(questionType, user);
+    if (directAnswer?.response) {
+      // Se temos uma resposta direta, usar ela + pergunta de continuação
+      return `${directAnswer.response}
+
+${directAnswer.followUp}`;
+    }
+    
+    // PASSO 7: Se não temos resposta direta, usar Claude
+    const turnCount = countConversationTurns(history);
+    
+    // Construir array de mensagens com histórico
+    const messages = buildMessageHistory(history, messageText);
+    
+    // Selecionar a pergunta seguinte baseada no caminho
+    const followUpQuestion = getFollowUpQuestion(conversationPath, turnCount);
+
+    const pathDescriptions = {
+      content: "O cliente está interessado no CONTEÚDO do curso (o que aprende, estrutura, matéria).",
+      payment: "O cliente tem dúvidas sobre PAGAMENTO, preço, desconto ou formas de pagar.",
+      access: "O cliente tem problemas de ACESSO à plataforma (login, conta, entrar no site).",
+      technical: "O cliente enfrenta PROBLEMAS TÉCNICOS (erro, bug, não funciona, travou).",
+      general: "O cliente está começando a conversa ou tem interesse geral."
+    };
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -1952,13 +2317,45 @@ Mensagem do cliente: ${messageText}
       },
       body: JSON.stringify({
         model: cleanEnv(process.env.CLAUDE_MODEL) || "claude-3-5-sonnet-20241022",
-        max_tokens: 200,
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ]
+        max_tokens: 300,
+        system: `Você é um atendente comercial super amigável e conversador do WhatsApp.
+
+CONTEXTO ATUAL:
+${pathDescriptions[conversationPath]}
+Tipo de pergunta: ${questionType}
+Estágio da conversa: ${stage}
+Total de mensagens: ${history.length}
+
+PERSONALIDADE:
+- Seja natural, casual e genuíno - fale como um amigo
+- Use emojis moderadamente (1-2 por mensagem)
+- Seja breve mas completo (máximo 3-4 frases curtas)
+- NUNCA repita respostas anteriores na conversa
+- Tenha criatividade nas respostas
+
+O CLIENTE:
+${user?.name ? `Nome: ${user.name}` : "Novo cliente"}
+Status: Ainda não tem acesso ao curso
+
+${isConfirmationMsg ? `IMPORTANTE: O cliente CONFIRMOU algo! Avance para próximo passo:
+- Se é awareness → mostre valor real
+- Se é interest → prepare para decisão
+- Se é decision → prepare para ação/pagamento` : ""}
+
+REGRA MAIS IMPORTANTE - RESPONDER E CONTINUAR:
+1️⃣ RESPONDA a pergunta específica do cliente de forma clara
+2️⃣ DEPOIS termine com uma pergunta que continua a conversa
+3️⃣ A pergunta deve ser: "${followUpQuestion}"
+
+EXEMPLOS:
+✅ "Sim, o curso ensina isso! Módulos práticos sobre estrutura, ATS, tudo. E qual parte mais te interessa?"
+✅ "Entendi! Você quer melhorar pra passar em entrevista. Você já tem um currículo básico ou começamos do zero?"
+
+NUNCA:
+❌ Ignore a pergunta do cliente
+❌ Faça apenas perguntas genéricas
+❌ Repita padrões de respostas anteriores`,
+        messages: messages
       })
     });
 
