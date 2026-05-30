@@ -1984,8 +1984,33 @@ function detectConversationPath(history) {
   return Object.keys(scores).find(key => scores[key] === maxScore);
 }
 
+function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9áàãâéèêíìîóòõôúùûç ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getPreviousBotQuestions(history) {
+  return history
+    .filter(msg => msg.direction === "out")
+    .map(msg => normalizeText(msg.message_text || ""));
+}
+
+function findUnusedQuestion(questions, previousQuestions) {
+  for (const question of questions) {
+    const normalizedQuestion = normalizeText(question);
+    const alreadyAsked = previousQuestions.some(prev => prev.includes(normalizedQuestion) || normalizedQuestion.includes(prev));
+    if (!alreadyAsked) {
+      return question;
+    }
+  }
+  return questions[Math.floor(Math.random() * questions.length)];
+}
+
 // Pool de perguntas variadas por caminho
-function getFollowUpQuestion(path, conversationTurns = 0) {
+function getFollowUpQuestion(path, history = []) {
   const paths = {
     content: [
       "E qual é a sua principal necessidade: melhorar o currículo para passar em entrevistas, ou aplicar na prática?",
@@ -1993,7 +2018,9 @@ function getFollowUpQuestion(path, conversationTurns = 0) {
       "Você quer focar em qual parte: fazer o conteúdo ficar mais atrativo aos recrutadores, ou entender a estrutura certa?",
       "Qual é o seu maior desafio agora: saber o que incluir no currículo ou como apresentar de forma profissional?",
       "O que te preocupa mais: deixar importantes informações de fora ou não saber como organizá-las visualmente?",
-      "Quer aprender a adaptar o currículo para diferentes posições? É isso que está faltando?"
+      "Quer aprender a adaptar o currículo para diferentes posições? É isso que está faltando?",
+      "Se eu te mostrar como deixar seu currículo mais fácil de ler, você acha que vai ajudar em entrevistas?",
+      "Você quer melhorar o conteúdo do currículo ou toda a forma como ele é apresentado?"
     ],
     payment: [
       "Qual é a sua maior preocupação: o valor total, as formas de pagamento, ou questões de segurança da transação?",
@@ -2001,7 +2028,9 @@ function getFollowUpQuestion(path, conversationTurns = 0) {
       "Entendi sua preocupação com o investimento. Você quer saber qual é o retorno que vai ter?",
       "O que ajudaria mais nesse momento: saber exatamente o que você ganha com o acesso ou tirar dúvidas técnicas?",
       "Posso explicar melhor as formas de pagamento disponíveis ou você quer um desconto especial?",
-      "Você quer parcelar ou prefere à vista? A gente pode encontrar uma forma que cabe no seu bolso."
+      "Você quer parcelar ou prefere à vista? A gente pode encontrar uma forma que cabe no seu bolso.",
+      "Você quer que eu te explique o valor e também as vantagens que ele traz pra sua carreira?",
+      "Prefere pagar agora e ter acesso imediato, ou quer saber todas as garantias antes de decidir?"
     ],
     access: [
       "Quando você tentou acessar, qual foi exatamente a mensagem de erro? Consegue me mandar um print?",
@@ -2009,7 +2038,9 @@ function getFollowUpQuestion(path, conversationTurns = 0) {
       "Você conseguiu fazer o cadastro normalmente, ou o problema começou desde o começo?",
       "Já tentou acessar de outro navegador ou dispositivo? Às vezes resolve na hora!",
       "Qual é o navegador que você está usando no momento? Chrome, Firefox, Safari?",
-      "Qual dispositivo você está tentando usar: computador, tablet ou celular?"
+      "Qual dispositivo você está tentando usar: computador, tablet ou celular?",
+      "Você acessou pelo celular ou pelo computador? Isso pode fazer diferença.",
+      "Se eu te mandar um passo a passo rápido, quer testar agora comigo?"
     ],
     technical: [
       "Que tipo de erro está aparecendo na sua tela? Se conseguir um print, ajuda demais!",
@@ -2017,7 +2048,9 @@ function getFollowUpQuestion(path, conversationTurns = 0) {
       "Já tentou limpar o cache do navegador? Às vezes é só isso que resolve!",
       "Qual dispositivo você está usando: computador, tablet ou celular?",
       "Esse problema apareceu desde o começo ou começou agora de repente?",
-      "Qual é o seu sistema operacional: Windows, Mac ou Linux?"
+      "Qual é o seu sistema operacional: Windows, Mac ou Linux?",
+      "Você estava usando algum link específico ou clicou na página principal?",
+      "Se eu te orientar passo a passo agora, você consegue testar comigo?"
     ],
     general: [
       "O que você gostaria de saber primeiro: como funciona o curso, o que está incluso, ou como é o acesso?",
@@ -2025,14 +2058,15 @@ function getFollowUpQuestion(path, conversationTurns = 0) {
       "Quer que eu explique tudo desde o começo ou você tem uma dúvida específica?",
       "O que te traz por aqui? Você está buscando melhorar o currículo, conseguir mais entrevistas, ou os dois?",
       "Como posso te ajudar melhor: mostrando o que você ganha com o curso ou respondendo dúvidas técnicas?",
-      "Se eu resolvesse uma dúvida agora, qual seria a mais importante pra você?"
+      "Se eu resolvesse uma dúvida agora, qual seria a mais importante pra você?",
+      "Você prefere que eu te explique o curso com exemplos reais ou com foco no seu caso?",
+      "Você quer saber primeiro sobre resultados ou sobre como o curso funciona?"
     ]
   };
 
   const questions = paths[path] || paths.general;
-  // Variar baseado no número de turnos para não repetir
-  const index = conversationTurns % questions.length;
-  return questions[index];
+  const previousQuestions = getPreviousBotQuestions(history);
+  return findUnusedQuestion(questions, previousQuestions);
 }
 
 // Contar turnos de conversa do cliente (quantas vezes ele mandou mensagem)
@@ -2091,33 +2125,103 @@ function detectConversationStage(history, conversationPath) {
 function getStageProgression(stage, conversationPath, mentionsCount) {
   const responses = {
     awareness: {
-      content: "Já que você perguntou sobre conteúdo, vou ser bem direto: o curso não é só teoria. É prático mesmo. Você já tem um currículo pronto ou quer começar do zero?",
-      payment: "Entendi sua preocupação. Deixa eu ser transparente: o investimento é pequeno comparado ao retorno. A maioria recupera em UMA entrevista a mais que consegue! Quer saber exatamente como?",
-      access: "Tranquilo, o acesso é automático! Logo após o pagamento você já tem tudo liberado. Que tal começarmos pelo essencial então?",
-      general: "Entendi sua dúvida. Deixa eu organizar melhor para você: o curso tem 3 pilares principais. Qual te interessa mais?"
+      content: [
+        "Já que você perguntou sobre conteúdo, vou ser bem direto: o curso não é só teoria. É prático mesmo. Você já tem um currículo pronto ou quer começar do zero?",
+        "Esse é o tipo de dúvida que a gente resolve rápido: o curso mostra o passo a passo para o currículo e como se preparar. Você quer começar pelo entendimento do conteúdo ou pela aplicação prática?",
+        "Ótimo ponto! O curso oferece aulas práticas e exercícios aplicáveis. Você prefere um caminho mais focado no currículo ou na aprovação em entrevistas?"
+      ],
+      payment: [
+        "Entendi sua preocupação. Deixa eu ser transparente: o investimento é pequeno comparado ao retorno. A maioria recupera em UMA entrevista a mais que consegue! Quer saber exatamente como?",
+        "O valor é planejado para ser acessível e com resultado rápido. Se quiser, te explico as formas de pagamento e qual oferece mais segurança para você.",
+        "Se você quer pagar com segurança e ver mais valor, posso te mostrar as opções que ficam mais fáceis para sua rotina."
+      ],
+      access: [
+        "Tranquilo, o acesso é automático! Logo após o pagamento você já tem tudo liberado. Que tal começarmos pelo essencial então?",
+        "O acesso é liberado rapidinho. Se quiser, posso te orientar no primeiro login agora mesmo.",
+        "Assim que fechar, você recebe o link e já entra no curso. Quer que eu prepare o passo a passo para você?"
+      ],
+      general: [
+        "Entendi sua dúvida. Deixa eu organizar melhor para você: o curso tem 3 pilares principais. Qual te interessa mais?",
+        "Vamos fazer o seguinte: te explico os pontos principais e você me diz o que mais te interessa. Pode ser?",
+        "Antes de falar de acesso, me conta: você quer entender o conteúdo, o valor ou o suporte do curso?"
+      ]
     },
     interest: {
-      content: "Perfeito! Então você quer isso mesmo. Muita gente não sabe, mas a maioria dos currículos que recebem não passam nem em filtro automático. Você quer aprender a fugir dessa?",
-      payment: "Vejo que realmente quer investir. Que bom! Deixa eu te mostrar um último detalhe que faz toda diferença...",
-      access: "Ótimo! Já que entendeu como funciona, quer começar agora mesmo? Tenho um cupom especial que expira em 24h.",
-      general: "Ótimo! Vejo que você tá levando a sério. Vamos pro próximo passo?"
+      content: [
+        "Perfeito! Então você quer isso mesmo. Muita gente não sabe, mas a maioria dos currículos que recebem não passam nem em filtro automático. Você quer aprender a fugir dessa?",
+        "Ótimo! Isso mostra que você já está no caminho certo. Você prefere melhorar o currículo para vagas específicas ou para o mercado em geral?",
+        "Esse é um ponto chave. Se te ajudar, posso mostrar como aplicar isso em um currículo que chama atenção desde o começo."
+      ],
+      payment: [
+        "Vejo que realmente quer investir. Que bom! Deixa eu te mostrar um último detalhe que faz toda diferença...",
+        "Isso mostra que você está interessado de verdade. Quer saber qual é a melhor forma de pagar para ter resultado rápido?",
+        "Excelente! Posso te explicar duas formas de pagamento que costumam facilitar bastante."
+      ],
+      access: [
+        "Ótimo! Já que entendeu como funciona, quer começar agora mesmo? Tenho um cupom especial que expira em 24h.",
+        "Perfeito, você está quase lá. Quer que eu te envie a etapa exata pra acessar já?",
+        "Isso é ótimo. Se quiser, te explico o passo a passo para acessar sem erro e já começar hoje."
+      ],
+      general: [
+        "Ótimo! Vejo que você tá levando a sério. Vamos pro próximo passo?",
+        "Perfeito. Agora me conta: você quer que eu te ajude com o curso em si ou com a forma de usar ele no seu caso?",
+        "Excelente. Posso te explicar como cada parte do curso ajuda a melhorar seu currículo e suas chances."
+      ]
     },
     decision: {
-      content: "Você já tem tudo que precisa saber! Só falta você tomar a ação. Tá pronto para começar, ou tem aquele último detalhe que te falta?",
-      payment: "Você tá 100% pronto. Só falta esse último passo. Qual forma de pagamento funciona melhor com você agora?",
-      access: "Perfeito! Você já entendeu tudo. Agora é só começar. Tá pronto?",
-      general: "Você tá bem perto de tomar essa decisão! Que tal a gente conversar com o especialista para ele te colocar no caminho certo?"
+      content: [
+        "Você já tem tudo que precisa saber! Só falta você tomar a ação. Tá pronto para começar, ou tem aquele último detalhe que te falta?",
+        "Está quase! Agora falta só decidir qual caminho quer seguir primeiro: currículo ou entrevistas?",
+        "Se quiser, posso te mostrar o próximo passo para você começar a aplicar tudo imediatamente."
+      ],
+      payment: [
+        "Você tá 100% pronto. Só falta esse último passo. Qual forma de pagamento funciona melhor com você agora?",
+        "Excelente. Você prefere pagar agora e garantir logo o acesso, ou quer que eu te aponte a opção mais tranquila?",
+        "Você já entendeu o valor. Quer que eu te diga qual opção de pagamento tem mais vantagem aqui?"
+      ],
+      access: [
+        "Perfeito! Você já entendeu tudo. Agora é só começar. Tá pronto?",
+        "Isso! Você só precisa do último passo de login para entrar. Quer que eu te ajude com ele agora?",
+        "Se você quiser, mando o passo a passo pra entrar e já começar a usar o curso hoje mesmo."
+      ],
+      general: [
+        "Você tá bem perto de tomar essa decisão! Que tal a gente conversar com o especialista para ele te colocar no caminho certo?",
+        "Pronto para o próximo passo? Se quiser, posso facilitar contato com quem entende do curso e da sua situação.",
+        "Você está quase acertando. Posso te direcionar para o especialista para tirar qualquer dúvida restante."
+      ]
     },
     objection: {
-      content: mentionsCount >= 3 ? "Vejo que você tem muita curiosidade! 🤓 Que tal a gente agendar uma call com o especialista? Ele pode responder TUDO que você quer saber com muito mais detalhe. Quer?" : "Ótima pergunta! Deixa eu responder com mais clareza...",
-      payment: mentionsCount >= 3 ? "Entendo perfeitamente sua preocupação com investimento. Sabe o que? Vou te passar o contato do especialista. Ele consegue estruturar uma forma que caiba no seu bolso. Topa?" : "Ótima observação. Deixa eu detalhar melhor...",
-      access: mentionsCount >= 2 ? "Seu navegador pode ser o problema. Melhor o especialista ajudar direto. Quer que eu passe o WhatsApp dele?" : "Deixa eu tentar resolver isso com você...",
-      technical: "Vamos passar isso pro especialista! Ele resolve rápido. Quer?",
-      general: "Vejo que você tem bastantes dúvidas, e isso é bom! Melhor você conversar direto com o especialista que conhece tudo. Topa?"
+      content: [
+        mentionsCount >= 3 ? "Vejo que você tem muita curiosidade! 🤓 Que tal a gente agendar uma call com o especialista? Ele pode responder TUDO que você quer saber com muito mais detalhe. Quer?" : "Ótima pergunta! Deixa eu responder com mais clareza...",
+        "Se você tiver mais dúvidas, posso te ajudar. Mas também posso passar o especialista para esclarecer todos os detalhes.",
+        "Sua dúvida é importante, e eu quero te deixar tranquilo. Se quiser, te passo o contato do especialista pra conversar mais a fundo."
+      ],
+      payment: [
+        mentionsCount >= 3 ? "Entendo perfeitamente sua preocupação com investimento. Sabe o que? Vou te passar o contato do especialista. Ele consegue estruturar uma forma que caiba no seu bolso. Topa?" : "Ótima observação. Deixa eu detalhar melhor...",
+        "Se quiser, te explico o plano que cabe no seu bolso e ainda garante o resultado. Quer saber mais?",
+        "Temos opções diferentes. Quer que eu te apresente a melhor para a sua situação?"
+      ],
+      access: [
+        mentionsCount >= 2 ? "Seu navegador pode ser o problema. Melhor o especialista ajudar direto. Quer que eu passe o WhatsApp dele?" : "Deixa eu tentar resolver isso com você...",
+        "Se preferir, posso te encaminhar para quem resolve passo a passo esse tipo de acesso.",
+        "A maioria resolve com um ajuste simples. Quer que eu te ajude com isso agora?"
+      ],
+      technical: [
+        "Vamos passar isso pro especialista! Ele resolve rápido. Quer?",
+        "Se quiser, posso te indicar o técnico que resolve essa questão de vez.",
+        "Eu posso continuar aqui ou te conectar direto com quem resolve esse erro mais rápido. Quer?"
+      ],
+      general: [
+        "Vejo que você tem bastantes dúvidas, e isso é bom! Melhor você conversar direto com o especialista que conhece tudo. Topa?",
+        "Se quiser, posso mandar o WhatsApp do especialista para você falar com quem entende do curso e do seu caso. Quer?",
+        "Você está com boas perguntas. Quer que eu passe seu caso para o especialista e ele responda tudo?"
+      ]
     }
   };
   
-  return responses[stage]?.[conversationPath] || responses.interest.general;
+  const choices = responses[stage]?.[conversationPath] || responses.interest.general;
+  if (!choices) return null;
+  return choices[Math.floor(Math.random() * choices.length)];
 }
 
 // Função para ofercer o especialista
@@ -2179,60 +2283,87 @@ function getDirectAnswer(questionType, user) {
     price: {
       response: `Ótimo, vou ser bem honesto com você! 💰
 
-O investimento é bem acessível (a gente tem promoção especial agora). As formas de pagamento incluem cartão parcelado, PIX ou transferência.
-
-E o detalhe? O valor sai barato quando você vê o ROI - clientes nossos conseguem aumentar em até 40% suas chances de passar em entrevistas após aplicar o que aprendem aqui.`,
-      followUp: "Qual forma de pagamento você prefere: à vista com desconto ou parcelado?"
+O investimento está com condição especial agora. As formas de pagamento incluem cartão parcelado, PIX ou transferência. O valor vale o esforço porque a maior parte das pessoas recupera o investimento na primeira entrevista a mais que conquista.`,
+      followUps: [
+        "Qual forma de pagamento você prefere: à vista com desconto ou parcelado?",
+        "Quer que eu te explique as opções de parcelamento disponíveis?",
+        "Você prefere garantir agora com desconto ou saber mais sobre o conteúdo antes?"
+      ]
     },
     content: {
       response: `Perfeito, deixa eu te contar! 📚
 
-O curso é estruturado em módulos práticos:
-✅ Como estruturar um currículo que chama atenção
-✅ Técnicas para passar em filtros automáticos (ATS)
-✅ Como evidenciar suas melhores qualidades
-✅ Casos reais de sucesso e adaptação
+O curso é dividido em módulos práticos:
+✅ Como montar um currículo que o recrutador entende na hora
+✅ Como passar por filtros automáticos (ATS)
+✅ Como valorizar suas experiências reais
+✅ Materiais e exemplos para aplicar direto no seu currículo
 
-Tudo é prático, não é blá blá blá teórico. Você sai com um currículo pronto pra usar.`,
-      followUp: "Qual parte mais te interessa: estrutura do currículo, passar em ATS, ou mostrar seus diferenciais?"
+Nada de teoria vazia — é resultado real.`,
+      followUps: [
+        "Qual parte mais te interessa: estrutura do currículo, passar em ATS, ou mostrar seus diferenciais?",
+        "Você quer que eu te explique como deixar seu currículo atrativo já na primeira leitura?",
+        "Se eu te mostrar o caminho mais rápido para convencer o recrutador, você quer ver?"
+      ]
     },
     access: {
       response: `Tranquilo, é bem simples! 🔓
 
-Depois que você paga, recebe um email com:
-1. Link pra entrar na plataforma
+Depois que você paga, você recebe:
+1. Um email com o link de acesso
 2. Seu usuário e senha
 3. Acesso imediato a todos os módulos
-4. Suporte 24/7 por WhatsApp (esse aqui mesmo!)`,
-      followUp: "Quer testar o acesso agora ou tem mais alguma dúvida antes de começar?"
+4. Suporte direto pelo WhatsApp`,
+      followUps: [
+        "Quer testar o acesso agora ou tem mais alguma dúvida antes de começar?",
+        "Você prefere que eu te explique o passo a passo de login?",
+        "Quer que eu te confirme se o seu cadastro já está liberado?"
+      ]
     },
     technical: {
       response: `Entendi, vamos resolver isso! 🔧
 
-Me ajuda com algumas infos:
+Me ajuda com essas informações:
 - Qual navegador você tá usando?
-- Desktop, tablet ou celular?
-- Qual é a mensagem de erro que aparece?`,
-      followUp: "Consegue me passar essas informações? Assim resolvo rápido!"
+- É no computador, celular ou tablet?
+- Qual mensagem de erro apareceu?`,
+      followUps: [
+        "Consegue me passar essas informações? Assim resolvo rápido!",
+        "Se você me disser o navegador e o erro, eu te oriento passo a passo.",
+        "Quer que eu te indique qual navegador funciona melhor com a plataforma?"
+      ]
     },
     viability: {
       response: `Funciona demais! 🎯
 
-A maioria dos clientes que fez o curso:
-✅ Passou a receber mais entrevistas
-✅ Conseguiu aquela vaga que queria
-✅ Aumentou as chances de recrutador ver seu perfil
+A maioria dos alunos que passa pelo curso:
+✅ Recebe mais convites para entrevista
+✅ Aprende a ser notado pelos recrutadores
+✅ Sabe mostrar as melhores experiências no currículo
 
-Mas o mais importante: você aprende o método. Então funciona de verdade pra qualquer situação.`,
-      followUp: "Você quer melhorar pra qual objetivo específico: conseguir mais entrevistas ou passar em processo seletivo?"
+O curso entrega um método prático, então funciona para várias áreas.`,
+      followUps: [
+        "Você quer melhorar pra qual objetivo: conseguir mais entrevistas ou passar em processo seletivo?",
+        "Quer que eu te mostre como isso se aplica no seu caso específico?",
+        "Deseja que eu explique como isso ajuda a ser visto pelos sistemas automáticos?"
+      ]
     },
     general: {
       response: null, // Deixar Claude responder
-      followUp: null
+      followUps: []
     }
   };
 
-  return answers[questionType] || answers.general;
+  const answer = answers[questionType] || answers.general;
+  if (!answer.response) return answer;
+
+  const followUpList = answer.followUps || ["Como posso te ajudar melhor? "];
+  const followUp = followUpList[Math.floor(Math.random() * followUpList.length)];
+
+  return {
+    response: answer.response,
+    followUp
+  };
 }
 
 // Contar turnos de conversa do cliente (quantas vezes ele mandou mensagem)
@@ -2298,7 +2429,7 @@ ${directAnswer.followUp}`;
     const messages = buildMessageHistory(history, messageText);
     
     // Selecionar a pergunta seguinte baseada no caminho
-    const followUpQuestion = getFollowUpQuestion(conversationPath, turnCount);
+    const followUpQuestion = getFollowUpQuestion(conversationPath, history);
 
     const pathDescriptions = {
       content: "O cliente está interessado no CONTEÚDO do curso (o que aprende, estrutura, matéria).",
@@ -2468,6 +2599,7 @@ app.get("/api/inbox/conversations", async (_req, res) => {
       WHERE u.celular IS NOT NULL
         AND u.celular <> ''
       ORDER BY last_message_at DESC
+
     `);
 
     res.json({ success: true, conversations: rows });
