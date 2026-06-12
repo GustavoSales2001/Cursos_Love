@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import mysql from "mysql2/promise";
 import crypto from "crypto";
 import { MercadoPagoConfig, Payment } from "mercadopago";
+import { handleIncomingMessage } from "./messageHandler.js";
 
 dotenv.config();
 
@@ -2774,11 +2775,13 @@ app.post("/api/chat/start", async (req, res) => {
       user = rows[0] || null;
     }
 
-    const respostaClaude = await maybeGetClaudeReply(mensagem, user);
+    const { intent, reply } = handleIncomingMessage(mensagem, user);
 
-    const resposta =
-      respostaClaude ||
-      buildCustomerReply(mensagem, user);
+    let resposta = reply;
+    if (intent === "FALLBACK") {
+      const respostaClaude = await maybeGetClaudeReply(mensagem, user);
+      resposta = respostaClaude || reply;
+    }
 
     return res.json({
       success: true,
@@ -3397,25 +3400,21 @@ app.post("/api/webhooks/whatsapp", async (req, res) => {
       );
     }
 
-let reply = buildCustomerReply(text, user);
+    const { intent, reply } = handleIncomingMessage(text, user);
 
-// fallback inteligente com IA
-if (!reply) {
-  const claudeReply = await maybeGetClaudeReply(text, user);
+    let finalReply = reply;
+    if (intent === "FALLBACK") {
+      const claudeReply = await maybeGetClaudeReply(text, user);
+      finalReply = claudeReply || reply || "Posso te ajudar com pagamento, acesso ou dúvidas do curso 😊";
+    }
 
-  if (claudeReply) {
-    reply = claudeReply;
-  } else {
-    reply = "Posso te ajudar com pagamento, acesso ou dúvidas do curso 😊";
-  }
-}
-    const sendResponse = await sendWhatsAppText(from, reply);
+    const sendResponse = await sendWhatsAppText(from, finalReply);
 
     await saveWhatsappMessage({
       userId: user?.id || null,
       celular: from,
       direction: "out",
-      messageText: reply,
+      messageText: finalReply,
       waMessageId: sendResponse?.messages?.[0]?.id || null,
       rawPayload: sendResponse
     });
