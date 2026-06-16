@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import mysql from "mysql2/promise";
 import crypto from "crypto";
 import { MercadoPagoConfig, Payment } from "mercadopago";
-import { handleIncomingMessage } from "./messageHandler.js";
+import handleIncomingMessage from "./messageHandler.js";
 
 dotenv.config();
 
