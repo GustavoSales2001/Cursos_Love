@@ -28,7 +28,7 @@ function getStage(userKey) {
 }
 
 function isOption(msg, number) {
-  const optionWords = {
+  const options = {
     1: ["1", "opcao 1", "primeira", "primeiro", "a primeira", "prossiga com a primeira", "quero a primeira"],
     2: ["2", "opcao 2", "segunda", "segundo", "a segunda", "prossiga com a segunda", "quero a segunda"],
     3: ["3", "opcao 3", "terceira", "terceiro", "a terceira", "prossiga com a terceira", "quero a terceira"],
@@ -36,13 +36,13 @@ function isOption(msg, number) {
     5: ["5", "opcao 5", "quinta", "quinto", "a quinta", "prossiga com a quinta", "quero a quinta"]
   };
 
-  return optionWords[number].some(option => msg === option || msg.includes(option));
+  return options[number].some(option => msg === option || msg.includes(option));
 }
 
 function mainMenu(saudacao = "") {
   return `${saudacao}entendi.
 
-Para eu te ajudar melhor, escolha uma opção:
+Para eu te ajudar melhor, escolha uma opcao:
 
 1. Quero saber mais sobre o curso
 2. Ja tenho curriculo e quero melhorar
@@ -118,7 +118,8 @@ function accessMenu(saudacao = "") {
 1. Quero comprar o curso
 2. Ja comprei e quero acessar
 3. Tive problema no pagamento
-4. Quero tirar uma duvida antes de comprar`;
+4. Quero tirar uma duvida antes de comprar
+5. Quero voltar ao menu`;
 }
 
 function supportMenu(saudacao = "") {
@@ -131,6 +132,16 @@ function supportMenu(saudacao = "") {
 5. Quero falar com suporte`;
 }
 
+function doubtMenu(saudacao = "") {
+  return `${saudacao}sem problema. Me diga sua duvida principal ou escolha uma opcao:
+
+1. Conteudo do curso
+2. Pagamento
+3. Acesso
+4. Curriculo sem retorno
+5. Voltar ao menu`;
+}
+
 export function handleIncomingMessage(text = "", user = null) {
   const msg = normalizeText(text);
   const userKey = getUserKey(user);
@@ -140,106 +151,9 @@ export function handleIncomingMessage(text = "", user = null) {
 
   let reply = "";
 
-  if (
-    msg.includes("menu") ||
-    msg.includes("voltar") ||
-    msg.includes("inicio") ||
-    msg.includes("comecar de novo")
-  ) {
+  if (msg.includes("menu") || msg.includes("voltar") || msg.includes("inicio") || msg.includes("comecar de novo")) {
     setStage(userKey, "inicio");
-    return {
-      intent: "menu",
-      reply: mainMenu(saudacao)
-    };
-  }
-
-  if (
-    msg.includes("oi") ||
-    msg.includes("ola") ||
-    msg.includes("opa") ||
-    msg.includes("bom dia") ||
-    msg.includes("boa tarde") ||
-    msg.includes("boa noite")
-  ) {
-    setStage(userKey, "inicio");
-    return {
-      intent: "saudacao",
-      reply: mainMenu(`${saudacao}oi! Tudo bem? `)
-    };
-  }
-
-  if (
-    msg.includes("saber mais") ||
-    msg.includes("sobre o curso") ||
-    msg.includes("conteudo") ||
-    msg.includes("aulas") ||
-    msg.includes("modulo")
-  ) {
-    setStage(userKey, "curso");
-    return {
-      intent: "curso",
-      reply: courseMenu(saudacao)
-    };
-  }
-
-  if (
-    msg.includes("ja tenho curriculo") ||
-    msg.includes("tenho curriculo") ||
-    msg.includes("meu curriculo") ||
-    msg.includes("curriculo pronto") ||
-    msg.includes("passar melhor")
-  ) {
-    setStage(userKey, "curriculo");
-    return {
-      intent: "curriculo",
-      reply: curriculumMenu(saudacao)
-    };
-  }
-
-  if (
-    msg.includes("nao recebo retorno") ||
-    msg.includes("sem retorno") ||
-    msg.includes("ninguem chama") ||
-    msg.includes("nao chamam") ||
-    msg.includes("mando curriculo") ||
-    msg.includes("envio curriculo")
-  ) {
-    setStage(userKey, "sem_retorno");
-    return {
-      intent: "sem_retorno",
-      reply: noReturnMenu(saudacao)
-    };
-  }
-
-  if (
-    msg.includes("comprar") ||
-    msg.includes("acessar") ||
-    msg.includes("link") ||
-    msg.includes("pagamento") ||
-    msg.includes("pix") ||
-    msg.includes("cartao") ||
-    msg.includes("boleto")
-  ) {
-    setStage(userKey, "acesso");
-    return {
-      intent: "acesso",
-      reply: accessMenu(saudacao)
-    };
-  }
-
-  if (
-    msg.includes("erro") ||
-    msg.includes("bug") ||
-    msg.includes("travou") ||
-    msg.includes("nao abre") ||
-    msg.includes("nao consigo") ||
-    msg.includes("problema tecnico")
-  ) {
-    setStage(userKey, "suporte");
-    return {
-      intent: "suporte",
-      reply: supportMenu(saudacao)
-    };
+    return { intent: "menu", reply: mainMenu(saudacao) };
   }
 
   if (currentStage === "inicio") {
@@ -261,6 +175,31 @@ export function handleIncomingMessage(text = "", user = null) {
     }
   }
 
+  else if (currentStage === "duvida_menu") {
+    if (isOption(msg, 1)) {
+      setStage(userKey, "curso");
+      reply = courseMenu(saudacao);
+    } else if (isOption(msg, 2)) {
+      setStage(userKey, "acesso");
+      reply = `${saudacao}sobre pagamento, escolha uma opcao:
+
+1. Quero comprar o curso
+2. Tive problema no Pix
+3. Tive problema no cartao
+4. A pagina de pagamento travou
+5. Quero voltar ao menu`;
+    } else if (isOption(msg, 3)) {
+      setStage(userKey, "acesso");
+      reply = accessMenu(saudacao);
+    } else if (isOption(msg, 4)) {
+      setStage(userKey, "sem_retorno");
+      reply = noReturnMenu(saudacao);
+    } else if (isOption(msg, 5)) {
+      setStage(userKey, "inicio");
+      reply = mainMenu(saudacao);
+    }
+  }
+
   else if (currentStage === "curso") {
     if (isOption(msg, 1)) {
       reply = `${saudacao}no curso voce aprende a estruturar o curriculo de forma mais estrategica.
@@ -273,11 +212,11 @@ Os principais pontos sao:
 - como montar um resumo profissional
 - como evitar erros que fazem o curriculo ser ignorado
 
-Agora escolha:
+Escolha:
 
 1. Quero saber se serve para mim
 2. Quero o link do curso
-3. Quero falar com alguem`;
+3. Quero tirar outra duvida`;
       setStage(userKey, "curso_detalhe");
     } else if (isOption(msg, 2)) {
       reply = `${saudacao}serve principalmente se voce:
@@ -299,19 +238,15 @@ Escolha:
 
 https://gustavosales2001.github.io/Cursos_Love/
 
-Se quiser, tambem posso te explicar antes o que voce vai encontrar na pagina.
+Escolha:
 
 1. Quero acessar agora
 2. Quero entender melhor antes
-3. Quero falar com suporte`;
+3. Tive problema tecnico`;
       setStage(userKey, "link_enviado");
     } else if (isOption(msg, 4)) {
-      reply = `${saudacao}claro. Me diga se voce quer falar sobre:
-
-1. Duvidas do curso
-2. Pagamento
-3. Acesso ou problema tecnico`;
-      setStage(userKey, "humano");
+      reply = doubtMenu(saudacao);
+      setStage(userKey, "duvida_menu");
     }
   }
 
@@ -355,7 +290,7 @@ Escolha:
 6. Nao tem excesso de imagem, tabela ou coluna?
 7. O resumo profissional esta claro?
 
-Agora escolha:
+Escolha:
 
 1. Quero aprender a ajustar isso
 2. Quero o link do curso
@@ -416,8 +351,6 @@ Escolha:
 
 https://gustavosales2001.github.io/Cursos_Love/
 
-Depois escolha a forma de pagamento disponivel na pagina.
-
 Se der qualquer erro, me envie um print.
 
 1. Ja acessei
@@ -444,24 +377,26 @@ Escolha:
 1. Pix
 2. Cartao
 3. Boleto
-4. A pagina travou`;
+4. A pagina travou
+5. Quero voltar ao menu`;
       setStage(userKey, "pagamento_erro");
     } else if (isOption(msg, 4)) {
-      setStage(userKey, "curso");
-      reply = courseMenu(saudacao);
+      setStage(userKey, "duvida_menu");
+      reply = doubtMenu(saudacao);
+    } else if (isOption(msg, 5)) {
+      setStage(userKey, "inicio");
+      reply = mainMenu(saudacao);
     }
   }
 
   else if (currentStage === "suporte") {
     if (isOption(msg, 1) || isOption(msg, 2) || isOption(msg, 3) || isOption(msg, 4)) {
-      reply = `${saudacao}certo. Para eu verificar melhor, me envie um print da tela e descreva rapidamente o que aconteceu.
+      reply = `${saudacao}certo. Para verificar melhor, me envie um print da tela e descreva rapidamente o que aconteceu.
 
 Exemplo:
 "tentei pagar no Pix e a pagina travou"
 ou
 "comprei, mas nao consigo entrar"
-
-Depois disso eu consigo te direcionar melhor.
 
 1. Vou enviar o print
 2. Quero falar com suporte`;
@@ -504,13 +439,8 @@ Escolha:
 3. Tive problema tecnico`;
       setStage(userKey, "link_enviado");
     } else if (isOption(msg, 3)) {
-      reply = `${saudacao}sem problema. Me diga sua duvida principal ou escolha uma opcao:
-
-1. Conteudo do curso
-2. Pagamento
-3. Acesso
-4. Curriculo sem retorno`;
-      setStage(userKey, "inicio");
+      reply = doubtMenu(saudacao);
+      setStage(userKey, "duvida_menu");
     }
   }
 
@@ -523,15 +453,8 @@ https://gustavosales2001.github.io/Cursos_Love/
 Se tiver qualquer erro na pagina, me mande um print.`;
       setStage(userKey, "fim");
     } else if (isOption(msg, 2)) {
-      reply = `${saudacao}claro. Pode me mandar sua duvida.
-
-Se preferir, escolha:
-
-1. Conteudo do curso
-2. Pagamento
-3. Acesso
-4. Curriculo sem retorno`;
-      setStage(userKey, "inicio");
+      reply = doubtMenu(saudacao);
+      setStage(userKey, "duvida_menu");
     } else if (isOption(msg, 3)) {
       setStage(userKey, "suporte");
       reply = supportMenu(saudacao);
@@ -539,8 +462,28 @@ Se preferir, escolha:
   }
 
   if (!reply) {
-    reply = mainMenu(saudacao);
-    setStage(userKey, "inicio");
+    if (msg.includes("oi") || msg.includes("ola") || msg.includes("opa") || msg.includes("bom dia") || msg.includes("boa tarde") || msg.includes("boa noite")) {
+      setStage(userKey, "inicio");
+      reply = mainMenu(`${saudacao}oi! Tudo bem? `);
+    } else if (msg.includes("saber mais") || msg.includes("curso") || msg.includes("conteudo")) {
+      setStage(userKey, "curso");
+      reply = courseMenu(saudacao);
+    } else if (msg.includes("curriculo") || msg.includes("gupy") || msg.includes("ia")) {
+      setStage(userKey, "curriculo");
+      reply = curriculumMenu(saudacao);
+    } else if (msg.includes("nao recebo retorno") || msg.includes("sem retorno") || msg.includes("ninguem chama") || msg.includes("nao chamam")) {
+      setStage(userKey, "sem_retorno");
+      reply = noReturnMenu(saudacao);
+    } else if (msg.includes("comprar") || msg.includes("acessar") || msg.includes("link") || msg.includes("pagamento") || msg.includes("pix") || msg.includes("cartao")) {
+      setStage(userKey, "acesso");
+      reply = accessMenu(saudacao);
+    } else if (msg.includes("erro") || msg.includes("bug") || msg.includes("travou") || msg.includes("nao abre")) {
+      setStage(userKey, "suporte");
+      reply = supportMenu(saudacao);
+    } else {
+      setStage(userKey, "inicio");
+      reply = mainMenu(saudacao);
+    }
   }
 
   return {
